@@ -1,0 +1,24 @@
+namespace DevToolbar.Core.Models;
+
+using System.Text.Json.Serialization;
+
+/// <summary>
+/// Configuration for a quick action button.
+/// </summary>
+public class ActionConfig
+{
+    [JsonPropertyName("label")]
+    public string Label { get; set; } = string.Empty;
+
+    [JsonPropertyName("icon")]
+    public string Icon { get; set; } = string.Empty;
+
+    [JsonPropertyName("processPath")]
+    public string ProcessPath { get; set; } = string.Empty;
+
+    [JsonPropertyName("arguments")]
+    public string Arguments { get; set; } = string.Empty;
+
+    [JsonPropertyName("windowTitleRegex")]
+    public string? WindowTitleRegex { get; set; }
+}
