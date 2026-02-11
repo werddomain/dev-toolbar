@@ -2,6 +2,7 @@ using DevToolbar.Core.Events;
 using DevToolbar.Core.Interfaces;
 using DevToolbar.Plugins.Git;
 using DevToolbar.Plugins.Services;
+using DevToolbar.Plugins.TimeTracker;
 using DevToolbar.Plugins.WorkItems;
 using DevToolbar.UI.Services;
 using DevToolbar.Web.Mocks;
@@ -21,6 +22,8 @@ builder.Services.AddSingleton<ISettingsService, MockSettingsService>();
 builder.Services.AddSingleton<IPlugin, GitPlugin>();
 builder.Services.AddSingleton<IWorkItemProvider, MockWorkItemProvider>();
 builder.Services.AddSingleton<IPlugin, WorkItemsPlugin>();
+builder.Services.AddSingleton<ITimeTrackingService, MockTimeTrackingService>();
+builder.Services.AddSingleton<IPlugin, TimeTrackerPlugin>();
 builder.Services.AddSingleton<IPluginLoader, PluginLoader>();
 
 // Register UI services
