@@ -1,6 +1,64 @@
 # F1. Architecture & Fondations
 Mise en place de la solution, des 4 projets, et de l'injection de dépendance pour supporter le mode Hybride (MAUI) et le mode Web (Test).
+graph TD
+    %% Définition des Projets
+    Core["🟦 DevToolbar.Core\n(Class Library .NET 10)\nInterfaces & Models"]
+    UI["🟪 DevToolbar.UI\n(Razor Class Lib)\nComposants Blazor"]
+    Plugins["🟩 DevToolbar.Plugins\n(Class Library)\nLogique Métier & Implémentations"]
+    
+    MauiApp["🟧 DevToolbar.Maui\n(MAUI .NET 10)\nNative Host (Windows)"]
+    WebApp["⬜ DevToolbar.Web\n(Blazor Web App .NET 10)\nTest Host (Browser)"]
+    TestProject["⬛ DevToolbar.Tests.E2E\n(NUnit + Playwright)\nTests Automatisés"]
 
+    %% Relations
+    UI --> Core
+    Plugins --> Core
+    
+    MauiApp --> UI
+    MauiApp --> Plugins
+    MauiApp --> Core
+    
+    WebApp --> UI
+    WebApp --> Plugins
+    WebApp --> Core
+    
+    TestProject -.-> WebApp : "Pilote via Playwright"
+
+📂 DevToolbar.sln
+│
+├── 📂 src
+│   │
+│   ├── 🟦 DevToolbar.Core          # Le Cœur (Pas de dépendance UI ou Native)
+│   │   ├── Interfaces              # IPlugin, IProjectService, INativeService
+│   │   ├── Models                  # ProjectConfig, PluginContext
+│   │   └── Events                  # EventAggregator (Pub/Sub)
+│   │
+│   ├── 🟪 DevToolbar.UI            # La Librairie de Composants (RCL)
+│   │   ├── Components              # ActionButton.razor, ProjectSelector.razor
+│   │   ├── Layouts                 # MainLayout.razor
+│   │   ├── Pages                   # SettingsPage.razor
+│   │   └── wwwroot                 # CSS, JS, Images partagés
+│   │
+│   ├── 🟩 DevToolbar.Plugins       # Ta "Business-Logic" (Git, TFS, etc.)
+│   │   ├── Git                     # Implémentation IPlugin pour Git
+│   │   ├── AzureDevOps             # Implémentation IPlugin pour TFS
+│   │   └── TimeTracker             # Logique de tracking
+│   │
+│   ├── 🟧 DevToolbar.Maui          # L'Application Finale (Executable)
+│   │   ├── Platforms               # Code spécifique Windows/Mac
+│   │   ├── Services                # WindowsProcessService (Implémentation réelle)
+│   │   └── MauiProgram.cs          # Injection de dépendance (DI) Réelle
+│   │
+│   └── ⬜ DevToolbar.Web           # Le "Mock Host" pour Playwright
+│       ├── Mocks                   # MockProcessService (Simule les actions)
+│       └── Program.cs              # Injection de dépendance (DI) Mockée
+│
+└── 📂 tests
+    └── ⬛ DevToolbar.Tests.E2E     # Projet de Tests
+        ├── Drivers                 # Configuration Playwright
+        └── Scenarios               # Tests (ex: ButtonClickTest.cs)
+
+        
 ## US1.1 Création de la Solution et des Projets
 Mise en place de la structure de dossier et des références croisées.
 
