@@ -8,6 +8,7 @@ using Microsoft.Playwright.NUnit;
 /// Tests run against the DevToolbar.Web project hosted on localhost.
 /// </summary>
 [TestFixture]
+[Parallelizable(ParallelScope.None)]
 public class ToolbarUiTests : PageTest
 {
     private const string BaseUrl = "http://localhost:5280";
@@ -39,7 +40,7 @@ public class ToolbarUiTests : PageTest
 
         // Wait for server to be ready
         using var httpClient = new HttpClient();
-        var maxRetries = 30;
+        var maxRetries = 60;
         for (var i = 0; i < maxRetries; i++)
         {
             try
@@ -66,62 +67,121 @@ public class ToolbarUiTests : PageTest
         }
     }
 
+    /// <summary>
+    /// Navigate to the app and wait for SSR content to appear.
+    /// </summary>
+    private async Task NavigateAndWait()
+    {
+        await Page.GotoAsync(BaseUrl, new() { WaitUntil = WaitUntilState.Load });
+        // The SSR-rendered content includes .toolbar-shell immediately
+        await Expect(Page.Locator(".toolbar-shell")).ToBeVisibleAsync(new() { Timeout = 30000 });
+    }
+
     [Test]
     public async Task PageTitle_ShouldBeDevToolbar()
     {
-        await Page.GotoAsync(BaseUrl);
-        await Expect(Page).ToHaveTitleAsync("DevToolbar");
+        await Page.GotoAsync(BaseUrl, new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page).ToHaveTitleAsync("DevToolbar", new() { Timeout = 30000 });
     }
 
     [Test]
     public async Task Header_ShouldDisplayBrandName()
     {
-        await Page.GotoAsync(BaseUrl);
-        var brandTitle = Page.Locator(".brand-title");
-        await Expect(brandTitle).ToHaveTextAsync("DevToolbar");
+        await NavigateAndWait();
+        await Expect(Page.Locator(".brand-title")).ToHaveTextAsync("DevToolbar");
     }
 
     [Test]
     public async Task ProjectSelector_ShouldHaveThreeOptions()
     {
-        await Page.GotoAsync(BaseUrl);
-        var select = Page.Locator(".project-selector select");
-        var options = select.Locator("option");
-        await Expect(options).ToHaveCountAsync(3);
+        await NavigateAndWait();
+        await Expect(Page.Locator(".project-selector select option")).ToHaveCountAsync(3);
     }
 
     [Test]
     public async Task ProjectSelector_DefaultShouldBeMyWebAPI()
     {
-        await Page.GotoAsync(BaseUrl);
-        var select = Page.Locator(".project-selector select");
-        await Expect(select).ToHaveValueAsync("proj-webapi");
+        await NavigateAndWait();
+        await Expect(Page.Locator(".project-selector select")).ToHaveValueAsync("proj-webapi");
     }
 
     [Test]
     public async Task GitPlugin_ShouldShowBranchAndStatus()
     {
-        await Page.GotoAsync(BaseUrl);
-        var gitBranch = Page.Locator(".git-branch");
-        await Expect(gitBranch).ToContainTextAsync("main");
-
-        var gitStatus = Page.Locator(".git-status");
-        await Expect(gitStatus).ToContainTextAsync("Clean");
+        await NavigateAndWait();
+        await Expect(Page.Locator(".git-branch")).ToContainTextAsync("main");
+        await Expect(Page.Locator(".git-status")).ToContainTextAsync("Clean");
     }
 
     [Test]
-    public async Task ActionDeck_ShouldDisplayButtons()
+    public async Task ActionDeck_ShouldDisplayThreeButtons()
     {
-        await Page.GotoAsync(BaseUrl);
-        var buttons = Page.Locator(".action-button");
-        await Expect(buttons).ToHaveCountAsync(3);
+        await NavigateAndWait();
+        await Expect(Page.Locator(".action-button")).ToHaveCountAsync(3);
     }
 
     [Test]
     public async Task ActionDeck_ShouldShowVisualStudioButton()
     {
-        await Page.GotoAsync(BaseUrl);
-        var vsButton = Page.Locator(".action-button", new() { HasText = "Visual Studio" });
-        await Expect(vsButton).ToBeVisibleAsync();
+        await NavigateAndWait();
+        await Expect(Page.Locator(".action-button", new() { HasText = "Visual Studio" })).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task WorkItemsPlugin_ShouldShowActiveItem()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".workitem-id")).ToContainTextAsync("#1234");
+        await Expect(Page.Locator(".workitem-title")).ToContainTextAsync("Fix login page redirect");
+    }
+
+    [Test]
+    public async Task WorkItemsPlugin_ShouldShowRecentItems()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".workitem-link")).ToHaveCountAsync(3);
+    }
+
+    [Test]
+    public async Task TimeTrackerPlugin_ShouldShowStoppedState()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".timer-status")).ToContainTextAsync("Stopped");
+    }
+
+    [Test]
+    public async Task TimeTrackerPlugin_ShouldShowTodayTotal()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".timer-today-label")).ToContainTextAsync("Today:");
+    }
+
+    [Test]
+    public async Task CiCdPlugin_ShouldShowPipelinesLabel()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".cicd-label")).ToContainTextAsync("Pipelines");
+    }
+
+    [Test]
+    public async Task CiCdPlugin_ShouldShowUnreadBadge()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".cicd-badge")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".cicd-badge")).ToContainTextAsync("2");
+    }
+
+    [Test]
+    public async Task CiCdPlugin_ShouldShowSessions()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".cicd-session")).ToHaveCountAsync(3);
+    }
+
+    [Test]
+    public async Task MyWebAPI_ShouldShowAllFourPlugins()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".plugin-panel")).ToHaveCountAsync(4);
     }
 }
