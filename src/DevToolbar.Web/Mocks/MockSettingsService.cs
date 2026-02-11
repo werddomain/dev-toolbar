@@ -11,6 +11,8 @@ public class MockSettingsService : ISettingsService
     private readonly List<ProjectConfig> _projects;
     private ProjectConfig? _activeProject;
 
+    public event Action<ProjectConfig>? OnActiveProjectChanged;
+
     public MockSettingsService()
     {
         _projects = new List<ProjectConfig>
@@ -22,7 +24,7 @@ public class MockSettingsService : ISettingsService
                 Path = "/projects/my-webapi",
                 ProjectType = "WebApi",
                 Theme = new ThemeConfig { AccentColor = "#0078D7" },
-                EnabledPlugins = new List<string> { "git-tools" },
+                EnabledPlugins = new List<string> { "git-tools", "work-items", "time-tracker", "github-agents" },
                 Actions = new List<ActionConfig>
                 {
                     new ActionConfig { Label = "Visual Studio", Icon = "🟣", ProcessPath = "devenv.exe" },
@@ -37,7 +39,7 @@ public class MockSettingsService : ISettingsService
                 Path = "/projects/frontend",
                 ProjectType = "SPA",
                 Theme = new ThemeConfig { AccentColor = "#4CAF50" },
-                EnabledPlugins = new List<string> { "git-tools" },
+                EnabledPlugins = new List<string> { "git-tools", "work-items", "time-tracker" },
                 Actions = new List<ActionConfig>
                 {
                     new ActionConfig { Label = "VS Code", Icon = "🔵", ProcessPath = "code.exe" },
@@ -51,7 +53,7 @@ public class MockSettingsService : ISettingsService
                 Path = "/projects/devops",
                 ProjectType = "Infrastructure",
                 Theme = new ThemeConfig { AccentColor = "#E53935" },
-                EnabledPlugins = new List<string> { "git-tools" },
+                EnabledPlugins = new List<string> { "git-tools", "github-agents" },
                 Actions = new List<ActionConfig>
                 {
                     new ActionConfig { Label = "Azure Portal", Icon = "☁️", ProcessPath = "https://portal.azure.com", WindowTitleRegex = ".*Azure.*" }
@@ -70,6 +72,10 @@ public class MockSettingsService : ISettingsService
     public Task SetActiveProjectAsync(string projectId)
     {
         _activeProject = _projects.FirstOrDefault(p => p.Id == projectId);
+        if (_activeProject != null)
+        {
+            OnActiveProjectChanged?.Invoke(_activeProject);
+        }
         return Task.CompletedTask;
     }
 }

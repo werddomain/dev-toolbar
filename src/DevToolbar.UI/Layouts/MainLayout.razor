@@ -19,7 +19,7 @@
 
     <main class="toolbar-main">
         <section class="toolbar-plugins">
-            <PluginZone Plugins="@PluginLoader.GetPlugins()" />
+            <PluginZone Plugins="@_visiblePlugins" />
         </section>
 
         <section class="toolbar-actions">
@@ -30,17 +30,47 @@
 
 @code {
     private List<ActionConfig> _actions = new();
+    private IReadOnlyList<IPlugin>? _visiblePlugins;
 
     protected override void OnInitialized()
     {
         var project = SettingsService.GetActiveProject();
         if (project != null)
         {
-            _actions = project.Actions;
-            ThemeService.SetTheme(project.Theme);
+            ApplyProject(project);
         }
 
+        SettingsService.OnActiveProjectChanged += OnProjectChanged;
         ThemeService.OnThemeChanged += StateHasChanged;
+    }
+
+    private void ApplyProject(ProjectConfig project)
+    {
+        _actions = project.Actions;
+        ThemeService.SetTheme(project.Theme);
+
+        // Filter plugins by project's enabled list
+        var allPlugins = PluginLoader.GetPlugins();
+        _visiblePlugins = allPlugins
+            .Where(p => project.EnabledPlugins.Contains(p.UniqueId))
+            .ToList()
+            .AsReadOnly();
+
+        // Notify all plugins of project change
+        var context = new PluginContext { Project = project };
+        foreach (var plugin in allPlugins)
+        {
+            _ = plugin.OnProjectChangedAsync(context);
+        }
+    }
+
+    private void OnProjectChanged(ProjectConfig project)
+    {
+        InvokeAsync(() =>
+        {
+            ApplyProject(project);
+            StateHasChanged();
+        });
     }
 
     private async Task HandleActionClicked(ActionConfig action)
@@ -67,6 +97,7 @@
 
     public void Dispose()
     {
+        SettingsService.OnActiveProjectChanged -= OnProjectChanged;
         ThemeService.OnThemeChanged -= StateHasChanged;
     }
 }

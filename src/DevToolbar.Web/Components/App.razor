@@ -16,9 +16,13 @@
 </head>
 
 <body>
-    <Routes />
+    <Routes @rendermode="RenderModeForPage" />
     <ReconnectModal />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 
 </html>
+
+@code {
+    private IComponentRenderMode RenderModeForPage => RenderMode.InteractiveServer;
+}
