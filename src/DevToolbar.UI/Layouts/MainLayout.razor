@@ -1,0 +1,72 @@
+@using DevToolbar.Core.Interfaces
+@using DevToolbar.Core.Models
+@using DevToolbar.UI.Services
+@using DevToolbar.UI.Components
+@implements IDisposable
+@inject IPluginLoader PluginLoader
+@inject ISettingsService SettingsService
+@inject IProcessService ProcessService
+@inject ThemeService ThemeService
+
+<div class="toolbar-shell" style="@ThemeService.GetCssVariables()">
+    <header class="toolbar-header">
+        <div class="toolbar-brand">
+            <span class="brand-icon">🛠</span>
+            <span class="brand-title">DevToolbar</span>
+        </div>
+        <ProjectSelector />
+    </header>
+
+    <main class="toolbar-main">
+        <section class="toolbar-plugins">
+            <PluginZone Plugins="@PluginLoader.GetPlugins()" />
+        </section>
+
+        <section class="toolbar-actions">
+            <ActionDeck Actions="@_actions" OnActionClicked="HandleActionClicked" />
+        </section>
+    </main>
+</div>
+
+@code {
+    private List<ActionConfig> _actions = new();
+
+    protected override void OnInitialized()
+    {
+        var project = SettingsService.GetActiveProject();
+        if (project != null)
+        {
+            _actions = project.Actions;
+            ThemeService.SetTheme(project.Theme);
+        }
+
+        ThemeService.OnThemeChanged += StateHasChanged;
+    }
+
+    private async Task HandleActionClicked(ActionConfig action)
+    {
+        try
+        {
+            if (!string.IsNullOrEmpty(action.WindowTitleRegex))
+            {
+                if (!ProcessService.FocusWindowByTitle(action.WindowTitleRegex))
+                {
+                    await ProcessService.StartProcessAsync(action.ProcessPath, action.Arguments);
+                }
+            }
+            else
+            {
+                await ProcessService.StartProcessAsync(action.ProcessPath, action.Arguments);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error executing action '{action.Label}': {ex.Message}");
+        }
+    }
+
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= StateHasChanged;
+    }
+}

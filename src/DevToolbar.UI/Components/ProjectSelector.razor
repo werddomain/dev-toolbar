@@ -1,0 +1,37 @@
+@using DevToolbar.Core.Interfaces
+@using DevToolbar.Core.Models
+@inject ISettingsService SettingsService
+
+<div class="project-selector">
+    <select @onchange="OnProjectSelected" title="Select project">
+        @if (_projects != null)
+        {
+            @foreach (var project in _projects)
+            {
+                <option value="@project.Id" selected="@(project.Id == _activeProjectId)">@project.Name</option>
+            }
+        }
+    </select>
+</div>
+
+@code {
+    private IReadOnlyList<ProjectConfig>? _projects;
+    private string? _activeProjectId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _projects = await SettingsService.GetProjectsAsync();
+        var active = SettingsService.GetActiveProject();
+        _activeProjectId = active?.Id;
+    }
+
+    private async Task OnProjectSelected(ChangeEventArgs e)
+    {
+        var projectId = e.Value?.ToString();
+        if (!string.IsNullOrEmpty(projectId))
+        {
+            await SettingsService.SetActiveProjectAsync(projectId);
+            _activeProjectId = projectId;
+        }
+    }
+}

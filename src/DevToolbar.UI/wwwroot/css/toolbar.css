@@ -1,0 +1,175 @@
+:root {
+    --accent-color: #0078D7;
+    --font-family: 'Segoe UI', sans-serif;
+    --bg-primary: #1e1e1e;
+    --bg-secondary: #2d2d2d;
+    --bg-tertiary: #3c3c3c;
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --border-color: #444444;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+/* Toolbar Shell */
+.toolbar-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    font-family: var(--font-family);
+}
+
+/* Header */
+.toolbar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background-color: var(--bg-secondary);
+    border-bottom: 2px solid var(--accent-color);
+}
+
+.toolbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.brand-icon {
+    font-size: 1.4em;
+}
+
+.brand-title {
+    font-weight: 600;
+    font-size: 1.1em;
+    color: var(--text-primary);
+}
+
+/* Project Selector */
+.project-selector select {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 0.9em;
+    cursor: pointer;
+}
+
+.project-selector select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+/* Main Content */
+.toolbar-main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Plugin Zone */
+.toolbar-plugins {
+    flex: 1;
+    padding: 12px;
+    overflow-y: auto;
+}
+
+.plugin-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.plugin-panel {
+    background-color: var(--bg-secondary);
+    border-radius: 6px;
+    padding: 12px;
+    border-left: 3px solid var(--accent-color);
+}
+
+.plugin-title {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.plugin-content {
+    font-size: 0.95em;
+}
+
+/* Git Plugin */
+.plugin-git {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.git-branch {
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
+.git-status.clean {
+    color: #4ec94e;
+}
+
+.git-status.dirty {
+    color: #e8a838;
+}
+
+/* Action Deck */
+.toolbar-actions {
+    width: 200px;
+    padding: 12px;
+    background-color: var(--bg-secondary);
+    border-left: 1px solid var(--border-color);
+    overflow-y: auto;
+}
+
+.action-deck {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.action-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+
+.action-button:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.action-icon {
+    font-size: 1.2em;
+}
+
+.action-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
