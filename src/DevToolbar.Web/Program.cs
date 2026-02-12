@@ -19,6 +19,8 @@ builder.Services.AddSingleton<IProcessService, MockProcessService>();
 builder.Services.AddSingleton<IScriptService, MockScriptService>();
 builder.Services.AddSingleton<IFileSystemService, MockFileSystemService>();
 builder.Services.AddSingleton<ISettingsService, MockSettingsService>();
+builder.Services.AddSingleton<IStorageService, MockStorageService>();
+builder.Services.AddSingleton<INativeService, MockNativeService>();
 
 // Register plugins
 builder.Services.AddSingleton<IPlugin, GitPlugin>();

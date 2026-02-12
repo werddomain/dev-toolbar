@@ -1,0 +1,49 @@
+@using DevToolbar.Core.Interfaces
+@using DevToolbar.Core.Models
+@inject IProcessService ProcessService
+@inject INotificationService NotificationService
+
+<button class="smart-process-btn @(_isFocused ? "focused" : "")"
+        @onclick="HandleClick"
+        title="@(Action?.Label ?? "Process")">
+    <span class="smart-process-icon">@(Action?.Icon ?? "▶")</span>
+    <span class="smart-process-label">@(Action?.Label ?? "Launch")</span>
+    @if (_isFocused)
+    {
+        <span class="smart-process-badge">Active</span>
+    }
+</button>
+
+@code {
+    [Parameter]
+    public ActionConfig? Action { get; set; }
+
+    private bool _isFocused;
+
+    private async Task HandleClick()
+    {
+        if (Action == null) return;
+
+        try
+        {
+            // US4.2: Try to focus existing window first
+            if (!string.IsNullOrEmpty(Action.WindowTitleRegex))
+            {
+                _isFocused = ProcessService.FocusWindowByTitle(Action.WindowTitleRegex);
+                if (_isFocused)
+                {
+                    NotificationService.ShowInfo($"Focused {Action.Label}", "Smart Focus");
+                    return;
+                }
+            }
+
+            // Launch if not found
+            await ProcessService.StartProcessAsync(Action.ProcessPath, Action.Arguments);
+            NotificationService.ShowSuccess($"Launched {Action.Label}", "Action");
+        }
+        catch (Exception ex)
+        {
+            NotificationService.ShowError($"Failed: {ex.Message}", "Error");
+        }
+    }
+}

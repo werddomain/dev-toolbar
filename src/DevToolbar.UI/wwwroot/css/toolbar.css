@@ -1020,3 +1020,49 @@ body {
 .terminal-exit.failure {
     color: #E53935;
 }
+
+/* Smart Process Button (US4.2) */
+.smart-process-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.smart-process-btn:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.smart-process-btn.focused {
+    border-color: #4ec94e;
+    background-color: rgba(78, 201, 78, 0.15);
+}
+
+.smart-process-icon {
+    font-size: 1.2em;
+}
+
+.smart-process-label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.smart-process-badge {
+    background-color: #4ec94e;
+    color: #1e1e1e;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-size: 0.7em;
+    font-weight: 700;
+}

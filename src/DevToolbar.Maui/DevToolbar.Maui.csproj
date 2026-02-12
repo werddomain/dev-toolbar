@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFrameworks>net10.0-windows10.0.19041.0</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>DevToolbar.Maui</RootNamespace>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- Display name -->
+    <ApplicationTitle>DevToolbar</ApplicationTitle>
+    <ApplicationId>com.devtoolbar.app</ApplicationId>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+
+    <!-- Windows-only settings -->
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Blazor WebView -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DevToolbar.Core\DevToolbar.Core.csproj" />
+    <ProjectReference Include="..\DevToolbar.UI\DevToolbar.UI.csproj" />
+    <ProjectReference Include="..\DevToolbar.Plugins\DevToolbar.Plugins.csproj" />
+  </ItemGroup>
+
+</Project>

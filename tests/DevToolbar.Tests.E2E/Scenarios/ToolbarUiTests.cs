@@ -354,4 +354,37 @@ public class ToolbarUiTests : PageTest
         await Expect(Page.Locator(".terminal-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
         await Expect(Page.Locator(".terminal-exit")).ToContainTextAsync("Exit: 0");
     }
+
+    // --- Project Switching Tests ---
+
+    [Test]
+    public async Task ProjectSwitch_ShouldChangeVisiblePlugins()
+    {
+        await NavigateAndWait();
+        // Default MyWebAPI has 4 plugins
+        await Expect(Page.Locator(".plugin-panel")).ToHaveCountAsync(4);
+
+        // Switch to DevOps Pipeline (has only git-tools, github-agents)
+        await Page.Locator(".project-selector select").SelectOptionAsync("proj-devops");
+        await Task.Delay(500); // Wait for Blazor to re-render
+        await Expect(Page.Locator(".plugin-panel")).ToHaveCountAsync(2);
+
+        // Switch back to MyWebAPI
+        await Page.Locator(".project-selector select").SelectOptionAsync("proj-webapi");
+        await Task.Delay(500);
+        await Expect(Page.Locator(".plugin-panel")).ToHaveCountAsync(4);
+    }
+
+    [Test]
+    public async Task ProjectSwitch_ShouldUpdateActions()
+    {
+        await NavigateAndWait();
+        // Default MyWebAPI has 4 actions
+        await Expect(Page.Locator(".action-button")).ToHaveCountAsync(4);
+
+        // Switch to FrontEnd App (has 3 actions)
+        await Page.Locator(".project-selector select").SelectOptionAsync("proj-frontend");
+        await Task.Delay(500);
+        await Expect(Page.Locator(".action-button")).ToHaveCountAsync(3);
+    }
 }
