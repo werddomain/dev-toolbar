@@ -240,4 +240,15 @@ public class ScreenshotTests : PageTest
         await Page.ScreenshotAsync(new() { Path = ScreenshotPath("14-settings-config-hierarchy"), FullPage = true });
         Assert.That(File.Exists(ScreenshotPath("14-settings-config-hierarchy")), Is.True);
     }
+
+    [Test, Order(15)]
+    public async Task Capture_15_MauiDesktopPreview()
+    {
+        await NavigateAndWait();
+        // Verify MAUI window chrome is visible
+        await Expect(Page.Locator(".maui-window")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Expect(Page.Locator(".maui-titlebar")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("15-maui-desktop-preview"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("15-maui-desktop-preview")), Is.True);
+    }
 }

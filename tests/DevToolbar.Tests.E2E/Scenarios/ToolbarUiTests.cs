@@ -714,4 +714,56 @@ public class ToolbarUiTests : PageTest
         await Expect(Page.Locator(".config-level-name", new() { HasText = "Template Config" })).ToBeVisibleAsync();
         await Expect(Page.Locator(".config-level-path", new() { HasText = "template-webapi.json" })).ToBeVisibleAsync();
     }
+
+    // ==============================================================
+    // MAUI Desktop Preview Chrome Tests
+    // ==============================================================
+
+    [Test]
+    public async Task MauiPreview_ShouldShowWindowChrome()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".maui-window")).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task MauiPreview_ShouldShowTitleBar()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".maui-titlebar")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".maui-titlebar-text")).ToContainTextAsync("DevToolbar");
+    }
+
+    [Test]
+    public async Task MauiPreview_ShouldShowWindowButtons()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".maui-btn-minimize")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".maui-btn-maximize")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".maui-btn-close")).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task MauiPreview_ShouldShowPreviewHint()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".maui-preview-hint")).ToContainTextAsync("Web preview");
+    }
+
+    [Test]
+    public async Task MauiPreview_ToolbarRendersInsideWindow()
+    {
+        await NavigateAndWait();
+        // The toolbar-shell must be inside the MAUI window content area
+        await Expect(Page.Locator(".maui-content .toolbar-shell")).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task MauiPreview_SettingsPageAlsoWrappedInWindow()
+    {
+        await NavigateAndWait();
+        await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".maui-window")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".maui-content .settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+    }
 }

@@ -1,81 +1,109 @@
-.page {
-    position: relative;
+/* MAUI Desktop Preview Wrapper */
+.maui-desktop-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    background: #121212;
+    padding: 24px;
+    gap: 12px;
+}
+
+/* Simulated MAUI Window Frame */
+.maui-window {
+    width: 420px;
+    height: 680px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.5),
+        0 2px 8px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    background: #1e1e1e;
+}
+
+/* Simulated Title Bar (like MAUI borderless window) */
+.maui-titlebar {
+    display: flex;
+    align-items: center;
+    height: 32px;
+    background: #252526;
+    border-bottom: 1px solid #333;
+    padding: 0 8px;
+    gap: 6px;
+    flex-shrink: 0;
+    user-select: none;
+    -webkit-app-region: drag;
+}
+
+.maui-titlebar-icon {
+    font-size: 0.85em;
+}
+
+.maui-titlebar-text {
+    font-size: 0.75em;
+    color: #aaa;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.maui-titlebar-spacer {
+    flex: 1;
+}
+
+.maui-titlebar-btn {
+    width: 28px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: #888;
+    font-size: 0.75em;
+    cursor: default;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+}
+
+.maui-titlebar-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ccc;
+}
+
+.maui-btn-close:hover {
+    background: #e81123;
+    color: white;
+}
+
+/* Content area fills the rest of the window */
+.maui-content {
+    flex: 1;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
-main {
-    flex: 1;
+/* Override toolbar-shell to fill MAUI content area */
+.maui-content ::deep .toolbar-shell {
+    height: 100%;
 }
 
-.sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+/* Preview hint text */
+.maui-preview-hint {
+    font-size: 0.75em;
+    color: #666;
+    text-align: center;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
 }
 
-.top-row {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
-    justify-content: flex-end;
-    height: 3.5rem;
-    display: flex;
-    align-items: center;
+.maui-preview-hint strong {
+    color: #888;
 }
 
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        white-space: nowrap;
-        margin-left: 1.5rem;
-        text-decoration: none;
-    }
-
-    .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
-        text-decoration: underline;
-    }
-
-    .top-row ::deep a:first-child {
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-@media (max-width: 640.98px) {
-    .top-row {
-        justify-content: space-between;
-    }
-
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        margin-left: 0;
-    }
-}
-
-@media (min-width: 641px) {
-    .page {
-        flex-direction: row;
-    }
-
-    .sidebar {
-        width: 250px;
-        height: 100vh;
-        position: sticky;
-        top: 0;
-    }
-
-    .top-row {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
-
-    .top-row.auth ::deep a:first-child {
-        flex: 1;
-        text-align: right;
-        width: 0;
-    }
-
-    .top-row, article {
-        padding-left: 2rem !important;
-        padding-right: 1.5rem !important;
-    }
-}
-
+/* Blazor error UI */
 #blazor-error-ui {
     color-scheme: light only;
     background: lightyellow;
