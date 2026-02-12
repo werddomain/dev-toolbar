@@ -121,7 +121,7 @@ public class ToolbarUiTests : PageTest
     public async Task GitPlugin_ShouldShowBranchAndStatus()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".git-branch")).ToContainTextAsync("main");
+        await Expect(Page.Locator(".git-branch")).ToContainTextAsync("develop");
         await Expect(Page.Locator(".git-status")).ToContainTextAsync("Clean");
     }
 
@@ -323,7 +323,7 @@ public class ToolbarUiTests : PageTest
         await NavigateAndWait();
         await Page.Locator(".toolbar-report-btn").ClickAsync();
         await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Expect(Page.Locator(".time-report-filter")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".time-report-filter").First).ToBeVisibleAsync();
     }
 
     [Test]
@@ -389,10 +389,13 @@ public class ToolbarUiTests : PageTest
 
         // Switch to DevOps Pipeline (has only git-tools, github-agents)
         await Page.Locator(".project-selector select").SelectOptionAsync("proj-devops");
+        // Wait for footer to confirm project switch before checking plugins
+        await Expect(Page.Locator(".footer-project")).ToContainTextAsync("DevOps Pipeline", new() { Timeout = 5000 });
         await Expect(Page.Locator(".plugin-panel")).ToHaveCountAsync(2, new() { Timeout = 5000 });
 
         // Switch back to MyWebAPI
         await Page.Locator(".project-selector select").SelectOptionAsync("proj-webapi");
+        await Expect(Page.Locator(".footer-project")).ToContainTextAsync("MyWebAPI", new() { Timeout = 5000 });
         await Expect(Page.Locator(".plugin-panel")).ToHaveCountAsync(4, new() { Timeout = 5000 });
     }
 
@@ -511,6 +514,77 @@ public class ToolbarUiTests : PageTest
     {
         await NavigateAndWait();
         await Expect(Page.Locator(".timer-idle-label")).ToContainTextAsync("Idle timeout: 15 min");
+    }
+
+    [Test]
+    public async Task TimeTrackerPlugin_ShouldShowWorkItemLink()
+    {
+        await NavigateAndWait();
+        // Default state should show "No work item linked" until work item is selected
+        await Expect(Page.Locator(".timer-workitem")).ToBeVisibleAsync(new() { Timeout = 10000 });
+    }
+
+    [Test]
+    public async Task TimeTrackerPlugin_WorkItemShouldUpdateWhenSelected()
+    {
+        await NavigateAndWait();
+        // Select a work item via search
+        await Expect(Page.Locator(".workitem-search-toggle")).ToBeVisibleAsync(new() { Timeout = 10000 });
+        await Page.Locator(".workitem-search-toggle").ClickAsync();
+        await Expect(Page.Locator(".workitem-search-input")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Page.Locator(".workitem-search-input").PressSequentiallyAsync("dark");
+        await Expect(Page.Locator(".workitem-dropdown-item")).ToHaveCountAsync(1, new() { Timeout = 5000 });
+        await Page.Locator(".workitem-dropdown-item").First.ClickAsync();
+
+        // Timer should now show the work item ID
+        await Expect(Page.Locator(".timer-workitem-id")).ToContainTextAsync("#1235", new() { Timeout = 5000 });
+    }
+
+    // --- Git Default Branch from Config Tests (US5.1/US2.2) ---
+
+    [Test]
+    public async Task GitPlugin_ShouldChangeOnProjectSwitch()
+    {
+        await NavigateAndWait();
+        // MyWebAPI has DefaultBranch = "develop"
+        await Expect(Page.Locator(".git-branch")).ToContainTextAsync("develop");
+
+        // Switch to DevOps Pipeline (DefaultBranch = "release/1.0")
+        await Page.Locator(".project-selector select").SelectOptionAsync("proj-devops");
+        await Expect(Page.Locator(".git-branch")).ToContainTextAsync("release/1.0", new() { Timeout = 5000 });
+    }
+
+    // --- Time Report Grouping Tests (US5.4) ---
+
+    [Test]
+    public async Task TimeReport_ShouldHaveGroupByFilter()
+    {
+        await NavigateAndWait();
+        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        // Should have two filters: period and groupBy
+        await Expect(Page.Locator(".time-report-filter")).ToHaveCountAsync(2);
+    }
+
+    // --- Settings Page Enhancements (US2.2) ---
+
+    [Test]
+    public async Task SettingsPage_ShouldShowDefaultBranch()
+    {
+        await NavigateAndWait();
+        await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+        await Expect(Page.Locator(".settings-value", new() { HasText = "develop" })).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task SettingsPage_ShouldShowRepositoryLink()
+    {
+        await NavigateAndWait();
+        await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+        await Expect(Page.Locator(".settings-link")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".settings-link")).ToContainTextAsync("github.com");
     }
 
     // --- Settings Page Toggle Tests ---
