@@ -22,7 +22,7 @@
     protected override void OnInitialized()
     {
         NotificationService.OnNotification += HandleNotification;
-        _cleanupTimer = new System.Threading.Timer(_ => CleanupOldToasts(), null, 1000, 1000);
+        _cleanupTimer = new System.Threading.Timer(_ => CleanupOldToasts(), null, 3000, 3000);
     }
 
     private void HandleNotification(ToastNotification notification)

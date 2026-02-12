@@ -95,17 +95,14 @@ public class GithubAgentPlugin : IPlugin
                 _ => "⏳"
             };
 
-            // Capture for closure
-            var capturedSession = session;
-
             builder.OpenElement(20, "div");
             builder.AddAttribute(21, "class", $"cicd-session {statusClass}{(session.IsRead ? "" : " unread")}");
             // Click to mark as read
             builder.AddAttribute(22, "onclick", EventCallback.Factory.Create(this, () =>
             {
-                if (!capturedSession.IsRead)
+                if (!session.IsRead)
                 {
-                    _ciCdService.MarkAsRead(capturedSession.Id);
+                    _ciCdService.MarkAsRead(session.Id);
                 }
             }));
 
