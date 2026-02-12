@@ -1,0 +1,117 @@
+@using DevToolbar.Core.Interfaces
+@using DevToolbar.Core.Models
+@inject ITimeTrackingService TimeTrackingService
+@inject ISettingsService SettingsService
+
+<div class="time-report-overlay @(_isVisible ? "visible" : "")" @onclick="Close">
+    <div class="time-report-modal" @onclick:stopPropagation="true">
+        <header class="time-report-header">
+            <h3>📊 Time Report</h3>
+            <button class="time-report-close" @onclick="Close">✕</button>
+        </header>
+
+        <div class="time-report-filters">
+            <select class="time-report-filter" @onchange="OnPeriodChanged">
+                <option value="day" selected="@(_period == "day")">Today</option>
+                <option value="week" selected="@(_period == "week")">This Week</option>
+                <option value="month" selected="@(_period == "month")">This Month</option>
+            </select>
+            <button class="time-report-export" @onclick="ExportCsv" title="Export to CSV">📥 Export CSV</button>
+        </div>
+
+        <div class="time-report-body">
+            @if (_entries != null && _entries.Count > 0)
+            {
+                <div class="time-report-summary">
+                    <span class="time-report-total-label">Total:</span>
+                    <span class="time-report-total-value">@FormatDuration(_totalDuration)</span>
+                </div>
+
+                <table class="time-report-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Duration</th>
+                            <th>Work Item</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var entry in _entries)
+                        {
+                            <tr class="time-report-row">
+                                <td>@entry.StartTime.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td class="time-report-duration">@FormatDuration(entry.Duration)</td>
+                                <td>@(entry.WorkItemId ?? "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="time-report-empty">No entries for this period.</div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private bool _isVisible;
+    private string _period = "day";
+    private IReadOnlyList<TimeEntry>? _entries;
+    private TimeSpan _totalDuration;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _isVisible = IsVisible;
+        if (_isVisible)
+        {
+            await LoadEntries();
+        }
+    }
+
+    private async Task LoadEntries()
+    {
+        var project = SettingsService.GetActiveProject();
+        if (project == null) return;
+
+        var allEntries = await TimeTrackingService.GetEntriesAsync(project.Id);
+        var cutoff = _period switch
+        {
+            "week" => DateTime.Now.AddDays(-7),
+            "month" => DateTime.Now.AddDays(-30),
+            _ => DateTime.Today
+        };
+
+        _entries = allEntries.Where(e => e.StartTime >= cutoff).OrderByDescending(e => e.StartTime).ToList();
+        _totalDuration = _entries.Aggregate(TimeSpan.Zero, (sum, e) => sum + e.Duration);
+    }
+
+    private async Task OnPeriodChanged(ChangeEventArgs e)
+    {
+        _period = e.Value?.ToString() ?? "day";
+        await LoadEntries();
+    }
+
+    private async Task Close()
+    {
+        _isVisible = false;
+        await OnClose.InvokeAsync();
+    }
+
+    private Task ExportCsv()
+    {
+        // In a real implementation, this would download a CSV file
+        Console.WriteLine("CSV Export triggered");
+        return Task.CompletedTask;
+    }
+
+    private static string FormatDuration(TimeSpan duration) =>
+        $"{(int)duration.TotalHours:D2}:{duration.Minutes:D2}:{duration.Seconds:D2}";
+}

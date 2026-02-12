@@ -21,4 +21,19 @@ public class ActionConfig
 
     [JsonPropertyName("windowTitleRegex")]
     public string? WindowTitleRegex { get; set; }
+
+    [JsonPropertyName("actionType")]
+    public ActionType ActionType { get; set; } = ActionType.Process;
+
+    [JsonPropertyName("interpreter")]
+    public string? Interpreter { get; set; }
+}
+
+/// <summary>
+/// Type of action to perform.
+/// </summary>
+public enum ActionType
+{
+    Process,
+    Script
 }

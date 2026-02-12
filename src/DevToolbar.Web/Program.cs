@@ -16,6 +16,7 @@ builder.Services.AddRazorComponents()
 
 // Register mock services for web testing
 builder.Services.AddSingleton<IProcessService, MockProcessService>();
+builder.Services.AddSingleton<IScriptService, MockScriptService>();
 builder.Services.AddSingleton<IFileSystemService, MockFileSystemService>();
 builder.Services.AddSingleton<ISettingsService, MockSettingsService>();
 

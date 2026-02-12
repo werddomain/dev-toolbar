@@ -7,6 +7,7 @@
 @inject ISettingsService SettingsService
 @inject IProcessService ProcessService
 @inject INotificationService NotificationService
+@inject IScriptService ScriptService
 @inject ThemeService ThemeService
 
 <div class="toolbar-shell" style="@ThemeService.GetCssVariables()">
@@ -17,6 +18,7 @@
         </div>
         <div class="toolbar-header-controls">
             <ProjectSelector />
+            <button class="toolbar-report-btn" @onclick="ToggleTimeReport" title="Time Report">📊</button>
             <a href="/settings" class="toolbar-settings-btn" title="Settings">⚙️</a>
         </div>
     </header>
@@ -31,12 +33,17 @@
         </section>
     </main>
 
+    <TimeReport IsVisible="@_showTimeReport" OnClose="CloseTimeReport" />
+    <TerminalOutput @ref="_terminalOutput" IsVisible="@_showTerminal" OnClose="CloseTerminal" />
     <ToastContainer />
 </div>
 
 @code {
     private List<ActionConfig> _actions = new();
     private IReadOnlyList<IPlugin>? _visiblePlugins;
+    private bool _showTimeReport;
+    private bool _showTerminal;
+    private TerminalOutput? _terminalOutput;
 
     protected override void OnInitialized()
     {
@@ -55,14 +62,12 @@
         _actions = project.Actions;
         ThemeService.SetTheme(project.Theme);
 
-        // Filter plugins by project's enabled list
         var allPlugins = PluginLoader.GetPlugins();
         _visiblePlugins = allPlugins
             .Where(p => project.EnabledPlugins.Contains(p.UniqueId))
             .ToList()
             .AsReadOnly();
 
-        // Notify all plugins of project change
         var context = new PluginContext { Project = project };
         foreach (var plugin in allPlugins)
         {
@@ -79,10 +84,37 @@
         });
     }
 
+    private void ToggleTimeReport()
+    {
+        _showTimeReport = !_showTimeReport;
+    }
+
+    private void CloseTimeReport()
+    {
+        _showTimeReport = false;
+    }
+
+    private void CloseTerminal()
+    {
+        _showTerminal = false;
+    }
+
     private async Task HandleActionClicked(ActionConfig action)
     {
         try
         {
+            if (action.ActionType == ActionType.Script)
+            {
+                _showTerminal = true;
+                StateHasChanged();
+                await Task.Yield();
+                if (_terminalOutput != null)
+                {
+                    await _terminalOutput.RunScript(ScriptService, action.Interpreter ?? "pwsh", action.ProcessPath, action.Arguments);
+                }
+                return;
+            }
+
             if (!string.IsNullOrEmpty(action.WindowTitleRegex))
             {
                 if (!ProcessService.FocusWindowByTitle(action.WindowTitleRegex))

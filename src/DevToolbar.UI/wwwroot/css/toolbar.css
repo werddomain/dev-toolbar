@@ -113,8 +113,42 @@ body {
 /* Git Plugin */
 .plugin-git {
     display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.git-info {
+    display: flex;
     align-items: center;
     gap: 16px;
+}
+
+.git-sync {
+    display: flex;
+    gap: 8px;
+}
+
+.git-btn {
+    padding: 3px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8em;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.git-btn:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.git-sync-status {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    font-style: italic;
 }
 
 .git-branch {
@@ -723,4 +757,266 @@ body {
     border-radius: 10px;
     font-size: 0.8em;
     font-weight: 600;
+}
+
+/* Time Report Modal */
+.time-report-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 900;
+    justify-content: center;
+    align-items: center;
+}
+
+.time-report-overlay.visible {
+    display: flex;
+}
+
+.time-report-modal {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    width: 600px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.time-report-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 2px solid var(--accent-color);
+}
+
+.time-report-header h3 {
+    font-size: 1em;
+    color: var(--text-primary);
+}
+
+.time-report-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.2em;
+    cursor: pointer;
+}
+
+.time-report-close:hover {
+    color: var(--text-primary);
+}
+
+.time-report-filters {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.time-report-filter {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.85em;
+}
+
+.time-report-export {
+    margin-left: auto;
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: all 0.2s ease;
+}
+
+.time-report-export:hover {
+    background-color: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.time-report-body {
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.time-report-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background-color: var(--bg-secondary);
+    border-radius: 4px;
+}
+
+.time-report-total-label {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+}
+
+.time-report-total-value {
+    font-family: 'Consolas', monospace;
+    font-size: 1.1em;
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+.time-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85em;
+}
+
+.time-report-table th {
+    text-align: left;
+    padding: 6px 8px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.85em;
+    text-transform: uppercase;
+}
+
+.time-report-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.time-report-duration {
+    font-family: 'Consolas', monospace;
+    color: var(--accent-color);
+}
+
+.time-report-empty {
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+    padding: 24px;
+}
+
+/* Report Button in Header */
+.toolbar-report-btn {
+    background: none;
+    border: none;
+    font-size: 1.2em;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.toolbar-report-btn:hover {
+    opacity: 1;
+}
+
+/* Terminal Output Modal */
+.terminal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 900;
+    justify-content: center;
+    align-items: center;
+}
+
+.terminal-overlay.visible {
+    display: flex;
+}
+
+.terminal-modal {
+    background-color: #0c0c0c;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    width: 650px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.terminal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 8px 8px 0 0;
+}
+
+.terminal-header h3 {
+    font-size: 0.95em;
+    color: var(--text-primary);
+}
+
+.terminal-title {
+    flex: 1;
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    font-family: 'Consolas', monospace;
+}
+
+.terminal-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.2em;
+    cursor: pointer;
+}
+
+.terminal-close:hover {
+    color: var(--text-primary);
+}
+
+.terminal-body {
+    padding: 12px;
+    overflow-y: auto;
+    flex: 1;
+    max-height: 400px;
+}
+
+.terminal-output {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.85em;
+    color: #33ff33;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.terminal-footer {
+    padding: 8px 16px;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.85em;
+}
+
+.terminal-running {
+    color: #e8a838;
+}
+
+.terminal-exit.success {
+    color: #4ec94e;
+}
+
+.terminal-exit.failure {
+    color: #E53935;
 }
