@@ -37,7 +37,7 @@
 
                 @if (_groupBy == "project")
                 {
-                    var grouped = _allEntries!
+                    var grouped = _crossProjectEntries!
                         .Where(e => e.StartTime >= GetCutoff())
                         .GroupBy(e => e.ProjectId)
                         .Select(g => new { Key = g.Key, Total = g.Aggregate(TimeSpan.Zero, (sum, e) => sum + e.Duration), Entries = g.ToList() })
@@ -155,7 +155,7 @@
     private string _period = "day";
     private string _groupBy = "none";
     private IReadOnlyList<TimeEntry>? _entries;
-    private List<TimeEntry>? _allEntries;
+    private List<TimeEntry>? _crossProjectEntries;
     private Dictionary<string, string> _projectNames = new();
     private TimeSpan _totalDuration;
 
@@ -188,7 +188,7 @@
             var entries = await TimeTrackingService.GetEntriesAsync(p.Id);
             allProjectEntries.AddRange(entries);
         }
-        _allEntries = allProjectEntries;
+        _crossProjectEntries = allProjectEntries;
     }
 
     private DateTime GetCutoff() => _period switch

@@ -136,7 +136,7 @@
                     <span class="config-level-desc">Project type template (e.g., WebApi, SPA)</span>
                     @if (_activeProject != null)
                     {
-                        <span class="config-level-path">template-@(_activeProject.ProjectType?.ToLowerInvariant()).json</span>
+                        <span class="config-level-path">template-@(_activeProject.ProjectType?.ToLowerInvariant() ?? "unknown").json</span>
                     }
                 </div>
                 <div class="config-level">
