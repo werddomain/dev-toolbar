@@ -38,7 +38,7 @@ public class GithubAgentPlugin : IPlugin
         builder.OpenElement(0, "div");
         builder.AddAttribute(1, "class", "plugin-cicd");
 
-        // Status badge
+        // Status badge header
         builder.OpenElement(2, "div");
         builder.AddAttribute(3, "class", "cicd-header");
 
@@ -58,13 +58,24 @@ public class GithubAgentPlugin : IPlugin
             builder.AddAttribute(11, "class", "cicd-badge");
             builder.AddContent(12, unreadCount.ToString());
             builder.CloseElement();
+
+            // Mark All Read button
+            builder.OpenElement(13, "button");
+            builder.AddAttribute(14, "class", "cicd-mark-all-read");
+            builder.AddAttribute(15, "title", "Mark all as read");
+            builder.AddAttribute(16, "onclick", EventCallback.Factory.Create(this, () =>
+            {
+                _ciCdService.MarkAllAsRead(_currentProjectId);
+            }));
+            builder.AddContent(17, "✓ Read all");
+            builder.CloseElement();
         }
 
         builder.CloseElement(); // cicd-header
 
         // Sessions list
-        builder.OpenElement(13, "div");
-        builder.AddAttribute(14, "class", "cicd-sessions");
+        builder.OpenElement(18, "div");
+        builder.AddAttribute(19, "class", "cicd-sessions");
 
         foreach (var session in _sessions.Take(5))
         {
@@ -84,24 +95,35 @@ public class GithubAgentPlugin : IPlugin
                 _ => "⏳"
             };
 
-            builder.OpenElement(15, "div");
-            builder.AddAttribute(16, "class", $"cicd-session {statusClass}{(session.IsRead ? "" : " unread")}");
+            // Capture for closure
+            var capturedSession = session;
 
-            builder.OpenElement(17, "span");
-            builder.AddAttribute(18, "class", "cicd-session-icon");
-            builder.AddContent(19, statusIcon);
+            builder.OpenElement(20, "div");
+            builder.AddAttribute(21, "class", $"cicd-session {statusClass}{(session.IsRead ? "" : " unread")}");
+            // Click to mark as read
+            builder.AddAttribute(22, "onclick", EventCallback.Factory.Create(this, () =>
+            {
+                if (!capturedSession.IsRead)
+                {
+                    _ciCdService.MarkAsRead(capturedSession.Id);
+                }
+            }));
+
+            builder.OpenElement(23, "span");
+            builder.AddAttribute(24, "class", "cicd-session-icon");
+            builder.AddContent(25, statusIcon);
             builder.CloseElement();
 
-            builder.OpenElement(20, "a");
-            builder.AddAttribute(21, "href", session.Url);
-            builder.AddAttribute(22, "target", "_blank");
-            builder.AddAttribute(23, "class", "cicd-session-name");
-            builder.AddContent(24, session.Name);
+            builder.OpenElement(26, "a");
+            builder.AddAttribute(27, "href", session.Url);
+            builder.AddAttribute(28, "target", "_blank");
+            builder.AddAttribute(29, "class", "cicd-session-name");
+            builder.AddContent(30, session.Name);
             builder.CloseElement();
 
-            builder.OpenElement(25, "span");
-            builder.AddAttribute(26, "class", "cicd-session-branch");
-            builder.AddContent(27, session.Branch);
+            builder.OpenElement(31, "span");
+            builder.AddAttribute(32, "class", "cicd-session-branch");
+            builder.AddContent(33, session.Branch);
             builder.CloseElement();
 
             builder.CloseElement(); // cicd-session
