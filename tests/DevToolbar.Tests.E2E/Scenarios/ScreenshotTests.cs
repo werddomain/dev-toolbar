@@ -215,4 +215,29 @@ public class ScreenshotTests : PageTest
         await Page.ScreenshotAsync(new() { Path = ScreenshotPath("12-project-switch-frontend"), FullPage = true });
         Assert.That(File.Exists(ScreenshotPath("12-project-switch-frontend")), Is.True);
     }
+
+    [Test, Order(13)]
+    public async Task Capture_13_TimeReportByProject()
+    {
+        await NavigateAndWait();
+        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        // Switch to "This Week" and "By Project"
+        await Page.Locator(".time-report-filter").First.SelectOptionAsync("week");
+        await Page.Locator(".time-report-filter").Nth(1).SelectOptionAsync("project");
+        await Expect(Page.Locator(".time-report-group-key").First).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("13-time-report-by-project"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("13-time-report-by-project")), Is.True);
+    }
+
+    [Test, Order(14)]
+    public async Task Capture_14_SettingsConfigHierarchy()
+    {
+        await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+        // Wait for config hierarchy to be visible (avoid ScrollIntoViewIfNeeded due to SSR DOM replacement)
+        await Expect(Page.Locator(".settings-config-hierarchy")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("14-settings-config-hierarchy"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("14-settings-config-hierarchy")), Is.True);
+    }
 }

@@ -152,7 +152,8 @@ public class ToolbarUiTests : PageTest
     public async Task WorkItemsPlugin_ShouldShowRecentItems()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".workitem-link")).ToHaveCountAsync(3, new() { Timeout = 10000 });
+        // Recent items are inside .workitem-entry elements (not the active item link)
+        await Expect(Page.Locator(".workitem-entry .workitem-link")).ToHaveCountAsync(3, new() { Timeout = 10000 });
     }
 
     [Test]
@@ -612,5 +613,105 @@ public class ToolbarUiTests : PageTest
 
         // Verify it becomes active
         await Expect(Page.Locator(".settings-value", new() { HasText = "FrontEnd App" })).ToBeVisibleAsync(new() { Timeout = 5000 });
+    }
+
+    // --- US5.2: Work Item Web Links ---
+
+    [Test]
+    public async Task WorkItems_ActiveItemShouldHaveWebLink()
+    {
+        await NavigateAndWait();
+        var activeLink = Page.Locator(".workitem-active a.workitem-link");
+        await Expect(activeLink).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Expect(activeLink).ToHaveAttributeAsync("href", new System.Text.RegularExpressions.Regex("github\\.com"));
+        await Expect(activeLink).ToHaveAttributeAsync("target", "_blank");
+    }
+
+    [Test]
+    public async Task WorkItems_RecentItemsShouldHaveWebLinks()
+    {
+        await NavigateAndWait();
+        var recentLinks = Page.Locator(".workitem-entry a.workitem-link");
+        await Expect(recentLinks.First).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Expect(recentLinks.First).ToHaveAttributeAsync("href", new System.Text.RegularExpressions.Regex("github\\.com"));
+    }
+
+    // --- US5.4: Time Report By Project Grouping ---
+
+    [Test]
+    public async Task TimeReport_ShouldHaveByProjectGrouping()
+    {
+        await NavigateAndWait();
+        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
+
+        // The groupBy filter should have "By Project" option
+        var groupBySelect = Page.Locator(".time-report-filter").Nth(1);
+        await Expect(groupBySelect.Locator("option", new() { HasText = "By Project" })).ToBeAttachedAsync();
+    }
+
+    [Test]
+    public async Task TimeReport_ShouldShowPrePopulatedEntries()
+    {
+        await NavigateAndWait();
+        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
+
+        // Should show entries with a non-zero total
+        await Expect(Page.Locator(".time-report-total-value")).Not.ToHaveTextAsync("00:00:00");
+    }
+
+    [Test]
+    public async Task TimeReport_ByProjectGrouping_ShouldShowProjectNames()
+    {
+        await NavigateAndWait();
+        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
+
+        // Switch to "This Week" to get cross-project data
+        await Page.Locator(".time-report-filter").First.SelectOptionAsync("week");
+        // Select "By Project" grouping
+        await Page.Locator(".time-report-filter").Nth(1).SelectOptionAsync("project");
+
+        // Should show project group headers
+        await Expect(Page.Locator(".time-report-group-key", new() { HasText = "MyWebAPI" })).ToBeVisibleAsync(new() { Timeout = 5000 });
+    }
+
+    // --- US2.2: Config Hierarchy in Settings ---
+
+    [Test]
+    public async Task SettingsPage_ShouldShowConfigHierarchy()
+    {
+        await NavigateAndWait();
+        await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+
+        // Should show Configuration Hierarchy section
+        await Expect(Page.Locator("text=Configuration Hierarchy")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".config-level")).ToHaveCountAsync(3);
+    }
+
+    [Test]
+    public async Task SettingsPage_ConfigHierarchy_ShouldShowDevtoolbarJson()
+    {
+        await NavigateAndWait();
+        await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+
+        // Should show .devtoolbar.json as highest priority
+        await Expect(Page.Locator(".config-level-name", new() { HasText = ".devtoolbar.json" })).ToBeVisibleAsync();
+        // Should show project-specific path
+        await Expect(Page.Locator(".config-level-path", new() { HasText = "/projects/my-webapi/.devtoolbar.json" })).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task SettingsPage_ConfigHierarchy_ShouldShowTemplateConfig()
+    {
+        await NavigateAndWait();
+        await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+
+        await Expect(Page.Locator(".config-level-name", new() { HasText = "Template Config" })).ToBeVisibleAsync();
+        await Expect(Page.Locator(".config-level-path", new() { HasText = "template-webapi.json" })).ToBeVisibleAsync();
     }
 }
