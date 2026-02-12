@@ -64,9 +64,16 @@ public class GitPlugin : IPlugin
         builder.AddAttribute(14, "title", "Pull latest changes");
         builder.AddAttribute(15, "onclick", EventCallback.Factory.Create(this, async () =>
         {
-            _syncStatus = "Pulling...";
-            await _processService.StartProcessAsync("git", "pull");
-            _syncStatus = "Pull complete";
+            try
+            {
+                _syncStatus = "Pulling...";
+                await _processService.StartProcessAsync("git", "pull");
+                _syncStatus = "✓ Pull complete";
+            }
+            catch (Exception ex)
+            {
+                _syncStatus = $"✗ Pull failed: {ex.Message}";
+            }
         }));
         builder.AddContent(16, "⬇ Pull");
         builder.CloseElement();
@@ -76,9 +83,16 @@ public class GitPlugin : IPlugin
         builder.AddAttribute(19, "title", "Push local changes");
         builder.AddAttribute(20, "onclick", EventCallback.Factory.Create(this, async () =>
         {
-            _syncStatus = "Pushing...";
-            await _processService.StartProcessAsync("git", "push");
-            _syncStatus = "Push complete";
+            try
+            {
+                _syncStatus = "Pushing...";
+                await _processService.StartProcessAsync("git", "push");
+                _syncStatus = "✓ Push complete";
+            }
+            catch (Exception ex)
+            {
+                _syncStatus = $"✗ Push failed: {ex.Message}";
+            }
         }));
         builder.AddContent(21, "⬆ Push");
         builder.CloseElement();

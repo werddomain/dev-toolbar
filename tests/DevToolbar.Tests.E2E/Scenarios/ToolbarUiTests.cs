@@ -114,10 +114,10 @@ public class ToolbarUiTests : PageTest
     }
 
     [Test]
-    public async Task ActionDeck_ShouldDisplayThreeButtons()
+    public async Task ActionDeck_ShouldDisplayFourButtons()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".action-button")).ToHaveCountAsync(3);
+        await Expect(Page.Locator(".action-button")).ToHaveCountAsync(4);
     }
 
     [Test]
@@ -244,7 +244,7 @@ public class ToolbarUiTests : PageTest
     {
         await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
         await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
-        await Expect(Page.Locator(".settings-action-row")).ToHaveCountAsync(3);
+        await Expect(Page.Locator(".settings-action-row")).ToHaveCountAsync(4);
     }
 
     [Test]
@@ -262,5 +262,96 @@ public class ToolbarUiTests : PageTest
         await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
         await Expect(Page.Locator(".settings-back")).ToBeVisibleAsync();
         await Expect(Page.Locator(".settings-back")).ToContainTextAsync("Back to Toolbar");
+    }
+
+    // --- Git Quick Sync Tests ---
+
+    [Test]
+    public async Task GitPlugin_ShouldShowPullButton()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".git-btn-pull")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".git-btn-pull")).ToContainTextAsync("Pull");
+    }
+
+    [Test]
+    public async Task GitPlugin_ShouldShowPushButton()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".git-btn-push")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".git-btn-push")).ToContainTextAsync("Push");
+    }
+
+    // --- Time Report Modal Tests ---
+
+    [Test]
+    public async Task TimeReportButton_ShouldBeVisible()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".toolbar-report-btn")).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task TimeReport_ShouldOpenOnClick()
+    {
+        await NavigateAndWait();
+        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Time Report" })).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task TimeReport_ShouldHavePeriodFilter()
+    {
+        await NavigateAndWait();
+        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Expect(Page.Locator(".time-report-filter")).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task TimeReport_ShouldHaveExportButton()
+    {
+        await NavigateAndWait();
+        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Expect(Page.Locator(".time-report-export")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".time-report-export")).ToContainTextAsync("Export CSV");
+    }
+
+    // --- Script / Terminal Output Tests ---
+
+    [Test]
+    public async Task ActionDeck_ShouldShowBuildScriptButton()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".action-button", new() { HasText = "Build Script" })).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task BuildScript_ShouldOpenTerminalOnClick()
+    {
+        await NavigateAndWait();
+        await Page.Locator(".action-button", new() { HasText = "Build Script" }).ClickAsync();
+        await Expect(Page.Locator(".terminal-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Terminal Output" })).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task Terminal_ShouldShowMockOutput()
+    {
+        await NavigateAndWait();
+        await Page.Locator(".action-button", new() { HasText = "Build Script" }).ClickAsync();
+        await Expect(Page.Locator(".terminal-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Expect(Page.Locator(".terminal-output")).ToContainTextAsync("Build successful");
+    }
+
+    [Test]
+    public async Task Terminal_ShouldShowExitCode()
+    {
+        await NavigateAndWait();
+        await Page.Locator(".action-button", new() { HasText = "Build Script" }).ClickAsync();
+        await Expect(Page.Locator(".terminal-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Expect(Page.Locator(".terminal-exit")).ToContainTextAsync("Exit: 0");
     }
 }
