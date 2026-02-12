@@ -25,6 +25,10 @@ public class ActionConfig
     [JsonPropertyName("actionType")]
     public ActionType ActionType { get; set; } = ActionType.Process;
 
+    /// <summary>
+    /// Interpreter to use when <see cref="ActionType"/> is <see cref="ActionType.Script"/>.
+    /// Examples: "pwsh", "bash", "python".
+    /// </summary>
     [JsonPropertyName("interpreter")]
     public string? Interpreter { get; set; }
 }
