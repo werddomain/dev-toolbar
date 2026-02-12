@@ -30,6 +30,7 @@ builder.Services.AddSingleton<IPlugin, GithubAgentPlugin>();
 builder.Services.AddSingleton<IPluginLoader, PluginLoader>();
 
 // Register UI services
+builder.Services.AddSingleton<INotificationService, NotificationService>();
 builder.Services.AddSingleton<ThemeService>();
 builder.Services.AddSingleton<EventAggregator>();
 

@@ -403,3 +403,324 @@ body {
     color: var(--text-secondary);
     font-style: italic;
 }
+
+/* Timer Controls */
+.timer-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.timer-btn {
+    padding: 4px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.timer-btn-start {
+    background-color: #4ec94e;
+    color: #1e1e1e;
+    border-color: #4ec94e;
+}
+
+.timer-btn-start:hover {
+    background-color: #3da83d;
+}
+
+.timer-btn-stop {
+    background-color: #E53935;
+    color: white;
+    border-color: #E53935;
+}
+
+.timer-btn-stop:hover {
+    background-color: #c62828;
+}
+
+/* CI/CD Mark as Read */
+.cicd-mark-all-read {
+    margin-left: auto;
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75em;
+    transition: all 0.2s ease;
+}
+
+.cicd-mark-all-read:hover {
+    background-color: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.cicd-session {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.cicd-session:hover {
+    background-color: var(--bg-secondary);
+}
+
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 1000;
+    max-width: 320px;
+}
+
+.toast {
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    color: white;
+    animation: toast-slide-in 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes toast-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.toast-info {
+    background-color: #0078D7;
+}
+
+.toast-success {
+    background-color: #4ec94e;
+    color: #1e1e1e;
+}
+
+.toast-warning {
+    background-color: #e8a838;
+    color: #1e1e1e;
+}
+
+.toast-error {
+    background-color: #E53935;
+}
+
+.toast-title {
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.toast-message {
+    font-size: 0.9em;
+}
+
+/* Header Controls */
+.toolbar-header-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.toolbar-settings-btn {
+    text-decoration: none;
+    font-size: 1.3em;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.toolbar-settings-btn:hover {
+    opacity: 1;
+}
+
+/* Settings Page */
+.settings-page {
+    padding: 16px 24px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--accent-color);
+}
+
+.settings-header h2 {
+    font-size: 1.3em;
+    color: var(--text-primary);
+}
+
+.settings-back {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-size: 0.9em;
+}
+
+.settings-back:hover {
+    text-decoration: underline;
+}
+
+.settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.settings-section {
+    background-color: var(--bg-secondary);
+    border-radius: 6px;
+    padding: 16px;
+    border-left: 3px solid var(--accent-color);
+}
+
+.settings-section h3 {
+    font-size: 0.95em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.settings-field {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+}
+
+.settings-field label {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    min-width: 120px;
+}
+
+.settings-value {
+    color: var(--text-primary);
+    font-size: 0.9em;
+}
+
+.settings-path {
+    font-family: 'Consolas', monospace;
+    font-size: 0.85em;
+    color: var(--accent-color);
+}
+
+.settings-color-preview {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.color-swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.settings-plugins-list,
+.settings-actions-list,
+.settings-projects-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.settings-plugin-row,
+.settings-action-row,
+.settings-project-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    background-color: var(--bg-tertiary);
+    font-size: 0.85em;
+}
+
+.settings-plugin-status.enabled {
+    color: #4ec94e;
+    font-weight: 700;
+}
+
+.settings-plugin-status.disabled {
+    color: #E53935;
+    font-weight: 700;
+}
+
+.settings-plugin-name {
+    flex: 1;
+    color: var(--text-primary);
+}
+
+.settings-plugin-id {
+    color: var(--text-secondary);
+    font-family: 'Consolas', monospace;
+    font-size: 0.85em;
+}
+
+.settings-action-icon {
+    font-size: 1.1em;
+}
+
+.settings-action-label {
+    flex: 1;
+    color: var(--text-primary);
+}
+
+.settings-action-path {
+    color: var(--text-secondary);
+    font-family: 'Consolas', monospace;
+    font-size: 0.85em;
+}
+
+.settings-project-row {
+    cursor: default;
+}
+
+.settings-project-row.active {
+    border-left: 3px solid var(--accent-color);
+}
+
+.settings-project-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.settings-project-name {
+    flex: 1;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.settings-project-type {
+    color: var(--text-secondary);
+}
+
+.settings-project-badge {
+    background-color: var(--accent-color);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8em;
+    font-weight: 600;
+}
