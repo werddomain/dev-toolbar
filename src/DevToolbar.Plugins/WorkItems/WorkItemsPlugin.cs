@@ -119,7 +119,8 @@ public class WorkItemsPlugin : IPlugin
             builder.CloseElement(); // input
 
             // Search results dropdown
-            var displayItems = _searchResults.Count > 0 ? _searchResults : _recentItems;
+            var displayItems = _searchResults.Count > 0 ? _searchResults : 
+                              (_searchQuery.Length >= 1 ? Array.Empty<WorkItem>() : (IReadOnlyList<WorkItem>)_recentItems);
             if (displayItems.Count > 0)
             {
                 builder.OpenElement(50, "div");
@@ -158,6 +159,16 @@ public class WorkItemsPlugin : IPlugin
                 }
 
                 builder.CloseElement(); // workitem-dropdown
+            }
+            else if (_searchQuery.Length >= 1)
+            {
+                builder.OpenElement(70, "div");
+                builder.AddAttribute(71, "class", "workitem-dropdown");
+                builder.OpenElement(72, "div");
+                builder.AddAttribute(73, "class", "workitem-no-results");
+                builder.AddContent(74, "No items found");
+                builder.CloseElement();
+                builder.CloseElement();
             }
 
             builder.CloseElement(); // workitem-search

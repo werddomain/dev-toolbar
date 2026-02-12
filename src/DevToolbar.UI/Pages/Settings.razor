@@ -132,6 +132,7 @@
         {
             _activeProject.EnabledPlugins.Remove(pluginId);
         }
+        // Note: Changes are applied in-memory. In MAUI, JsonSettingsService persists to disk.
     }
 
     private async Task SwitchProject(string projectId)

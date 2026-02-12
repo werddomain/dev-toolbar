@@ -40,7 +40,7 @@
 
     private void OnPluginStateChanged()
     {
-        InvokeAsync(StateHasChanged);
+        _ = InvokeAsync(StateHasChanged);
     }
 
     private void UnsubscribeAll()

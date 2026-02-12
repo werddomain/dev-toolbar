@@ -31,7 +31,7 @@ public class MockWorkItemProvider : IWorkItemProvider
             .ToList()
             .AsReadOnly();
 
-        return Task.FromResult<IReadOnlyList<WorkItem>>(filtered.Count > 0 ? filtered : _items.Take(3).ToList().AsReadOnly());
+        return Task.FromResult<IReadOnlyList<WorkItem>>(filtered);
     }
 
     public Task<WorkItem?> GetByIdAsync(string id) =>
