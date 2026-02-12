@@ -39,41 +39,61 @@ public class TimeTrackerPlugin : IPlugin
         builder.OpenElement(0, "div");
         builder.AddAttribute(1, "class", "plugin-timetracker");
 
-        // Timer display
+        // Timer controls row
         builder.OpenElement(2, "div");
-        builder.AddAttribute(3, "class", "timer-display");
+        builder.AddAttribute(3, "class", "timer-controls");
 
-        builder.OpenElement(4, "span");
-        builder.AddAttribute(5, "class", isRunning ? "timer-status running" : "timer-status stopped");
-        builder.AddContent(6, isRunning ? "⏺ Recording" : "⏸ Stopped");
+        // Start/Stop button
+        builder.OpenElement(4, "button");
+        builder.AddAttribute(5, "class", isRunning ? "timer-btn timer-btn-stop" : "timer-btn timer-btn-start");
+        builder.AddAttribute(6, "onclick", EventCallback.Factory.Create(this, () =>
+        {
+            if (isRunning)
+                _timeService.Stop();
+            else
+                _timeService.Start(_currentProjectId);
+        }));
+        builder.AddContent(7, isRunning ? "⏹ Stop" : "▶ Start");
+        builder.CloseElement(); // button
+
+        // Status indicator
+        builder.OpenElement(8, "span");
+        builder.AddAttribute(9, "class", isRunning ? "timer-status running" : "timer-status stopped");
+        builder.AddContent(10, isRunning ? "⏺ Recording" : "⏸ Stopped");
         builder.CloseElement();
 
-        builder.OpenElement(7, "span");
-        builder.AddAttribute(8, "class", "timer-duration");
+        builder.CloseElement(); // timer-controls
+
+        // Timer display
+        builder.OpenElement(11, "div");
+        builder.AddAttribute(12, "class", "timer-display");
+
+        builder.OpenElement(13, "span");
+        builder.AddAttribute(14, "class", "timer-duration");
         if (isRunning && active != null)
         {
-            builder.AddContent(9, FormatDuration(active.Duration));
+            builder.AddContent(15, FormatDuration(active.Duration));
         }
         else
         {
-            builder.AddContent(9, "00:00:00");
+            builder.AddContent(15, "00:00:00");
         }
         builder.CloseElement();
 
         builder.CloseElement(); // timer-display
 
         // Today's total
-        builder.OpenElement(10, "div");
-        builder.AddAttribute(11, "class", "timer-today");
+        builder.OpenElement(16, "div");
+        builder.AddAttribute(17, "class", "timer-today");
 
-        builder.OpenElement(12, "span");
-        builder.AddAttribute(13, "class", "timer-today-label");
-        builder.AddContent(14, "Today:");
+        builder.OpenElement(18, "span");
+        builder.AddAttribute(19, "class", "timer-today-label");
+        builder.AddContent(20, "Today:");
         builder.CloseElement();
 
-        builder.OpenElement(15, "span");
-        builder.AddAttribute(16, "class", "timer-today-value");
-        builder.AddContent(17, FormatDuration(todayTotal));
+        builder.OpenElement(21, "span");
+        builder.AddAttribute(22, "class", "timer-today-value");
+        builder.AddContent(23, FormatDuration(todayTotal));
         builder.CloseElement();
 
         builder.CloseElement(); // timer-today
