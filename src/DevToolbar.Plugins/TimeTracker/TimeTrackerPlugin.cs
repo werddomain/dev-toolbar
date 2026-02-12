@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 public class TimeTrackerPlugin : IPlugin
 {
     private readonly ITimeTrackingService _timeService;
+    private readonly INotificationService _notificationService;
     private readonly EventAggregator _eventAggregator;
 
     public string UniqueId => "time-tracker";
@@ -25,13 +26,25 @@ public class TimeTrackerPlugin : IPlugin
     private string? _activeWorkItemId;
     private string? _activeWorkItemTitle;
 
-    public TimeTrackerPlugin(ITimeTrackingService timeService, EventAggregator eventAggregator)
+    public TimeTrackerPlugin(ITimeTrackingService timeService, INotificationService notificationService, EventAggregator eventAggregator)
     {
         _timeService = timeService;
+        _notificationService = notificationService;
         _eventAggregator = eventAggregator;
 
         // Subscribe to work item changes from WorkItemsPlugin
         _eventAggregator.Subscribe<ActiveWorkItemChangedEvent>(OnWorkItemChanged);
+
+        // Subscribe to idle detection (US5.3 - notification de rappel)
+        _timeService.OnIdleDetected += OnIdleDetected;
+    }
+
+    private void OnIdleDetected()
+    {
+        _notificationService.ShowWarning(
+            $"Timer paused — no activity for {(int)_timeService.IdleTimeout.TotalMinutes} minutes.",
+            "⏱ Idle Detected");
+        OnStateChanged?.Invoke();
     }
 
     private void OnWorkItemChanged(ActiveWorkItemChangedEvent evt)

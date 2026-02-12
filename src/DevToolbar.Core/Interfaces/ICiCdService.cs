@@ -21,4 +21,10 @@ public interface ICiCdService
 
     /// <summary>Event fired when sessions are updated.</summary>
     event Action? OnSessionsUpdated;
+
+    /// <summary>Polling interval for background refresh (US7.1).</summary>
+    TimeSpan PollingInterval { get; }
+
+    /// <summary>Start background polling for CI/CD session updates.</summary>
+    Task StartPollingAsync(string projectId, CancellationToken cancellationToken = default);
 }

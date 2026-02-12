@@ -23,6 +23,7 @@
                 <option value="project" selected="@(_groupBy == "project")">By Project</option>
                 <option value="workitem" selected="@(_groupBy == "workitem")">By Work Item</option>
                 <option value="day" selected="@(_groupBy == "day")">By Day</option>
+                <option value="action" selected="@(_groupBy == "action")">By Description</option>
             </select>
             <button class="time-report-export" @onclick="ExportCsv" title="Export to CSV">📥 Export CSV</button>
         </div>
@@ -100,6 +101,31 @@
                             <div class="time-report-group">
                                 <div class="time-report-group-header">
                                     <span class="time-report-group-key">📅 @group.Key.ToString("ddd, MMM dd")</span>
+                                    <span class="time-report-group-total">@FormatDuration(group.Total)</span>
+                                </div>
+                                @foreach (var entry in group.Entries)
+                                {
+                                    <div class="time-report-group-entry">
+                                        <span>@entry.StartTime.ToString("HH:mm") — @(entry.WorkItemId != null ? $"#{entry.WorkItemId}" : "—")</span>
+                                        <span class="time-report-duration">@FormatDuration(entry.Duration)</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                else if (_groupBy == "action")
+                {
+                    var grouped = _entries.GroupBy(e => string.IsNullOrEmpty(e.Description) ? "(no description)" : e.Description)
+                        .Select(g => new { Key = g.Key, Total = g.Aggregate(TimeSpan.Zero, (sum, e) => sum + e.Duration), Entries = g.ToList() })
+                        .OrderByDescending(g => g.Total);
+
+                    <div class="time-report-grouped">
+                        @foreach (var group in grouped)
+                        {
+                            <div class="time-report-group">
+                                <div class="time-report-group-header">
+                                    <span class="time-report-group-key">🏷 @group.Key</span>
                                     <span class="time-report-group-total">@FormatDuration(group.Total)</span>
                                 </div>
                                 @foreach (var entry in group.Entries)

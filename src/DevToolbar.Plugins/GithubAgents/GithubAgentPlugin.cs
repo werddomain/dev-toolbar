@@ -7,10 +7,12 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 /// <summary>
 /// Plugin for monitoring GitHub Actions / CI/CD sessions.
+/// Supports background polling for session updates (US7.1).
 /// </summary>
 public class GithubAgentPlugin : IPlugin
 {
     private readonly ICiCdService _ciCdService;
+    private readonly INotificationService _notificationService;
 
     public string UniqueId => "github-agents";
     public string Name => "CI/CD Status";
@@ -20,16 +22,42 @@ public class GithubAgentPlugin : IPlugin
 
     private string _currentProjectId = string.Empty;
     private IReadOnlyList<CiCdSession> _sessions = Array.Empty<CiCdSession>();
+    private CancellationTokenSource? _pollCts;
 
-    public GithubAgentPlugin(ICiCdService ciCdService)
+    public GithubAgentPlugin(ICiCdService ciCdService, INotificationService notificationService)
     {
         _ciCdService = ciCdService;
+        _notificationService = notificationService;
+
+        // Subscribe to session updates from background polling
+        _ciCdService.OnSessionsUpdated += OnSessionsUpdated;
+    }
+
+    private void OnSessionsUpdated()
+    {
+        // Refresh sessions when background polling detects changes
+        _ = RefreshSessionsAsync();
+    }
+
+    private async Task RefreshSessionsAsync()
+    {
+        _sessions = await _ciCdService.GetSessionsAsync(_currentProjectId);
+        OnStateChanged?.Invoke();
     }
 
     public async Task OnProjectChangedAsync(PluginContext context)
     {
+        // Cancel previous polling
+        _pollCts?.Cancel();
+        _pollCts?.Dispose();
+
         _currentProjectId = context.Project.Id;
         _sessions = await _ciCdService.GetSessionsAsync(_currentProjectId);
+
+        // Start background polling for this project (US7.1)
+        _pollCts = new CancellationTokenSource();
+        _ = _ciCdService.StartPollingAsync(_currentProjectId, _pollCts.Token);
+
         OnStateChanged?.Invoke();
     }
 

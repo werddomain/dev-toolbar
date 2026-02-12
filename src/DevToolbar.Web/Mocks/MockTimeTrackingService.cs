@@ -13,9 +13,13 @@ public class MockTimeTrackingService : ITimeTrackingService
     private DateTime _lastActivity = DateTime.Now;
 
     public event Action? OnTrackingChanged;
+    public event Action? OnIdleDetected;
 
     public TimeSpan IdleTimeout => TimeSpan.FromMinutes(15);
     public bool IsIdlePaused { get; private set; }
+
+    // Simulated idle detection timer
+    private Timer? _idleTimer;
 
     public MockTimeTrackingService()
     {
@@ -58,6 +62,19 @@ public class MockTimeTrackingService : ITimeTrackingService
         _entries.Add(_activeEntry);
         _lastActivity = DateTime.Now;
         IsIdlePaused = false;
+
+        // Start idle detection timer (simulated for web testing)
+        _idleTimer?.Dispose();
+        _idleTimer = new Timer(_ =>
+        {
+            if (_activeEntry != null && !IsIdlePaused && (DateTime.Now - _lastActivity) >= IdleTimeout)
+            {
+                IsIdlePaused = true;
+                OnIdleDetected?.Invoke();
+                OnTrackingChanged?.Invoke();
+            }
+        }, null, IdleTimeout, TimeSpan.FromMinutes(1));
+
         OnTrackingChanged?.Invoke();
         return _activeEntry;
     }
@@ -70,6 +87,8 @@ public class MockTimeTrackingService : ITimeTrackingService
         var stopped = _activeEntry;
         _activeEntry = null;
         IsIdlePaused = false;
+        _idleTimer?.Dispose();
+        _idleTimer = null;
         OnTrackingChanged?.Invoke();
         return stopped;
     }

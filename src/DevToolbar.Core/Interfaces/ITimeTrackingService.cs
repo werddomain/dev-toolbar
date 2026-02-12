@@ -33,4 +33,7 @@ public interface ITimeTrackingService
 
     /// <summary>Whether the tracker is currently paused due to inactivity.</summary>
     bool IsIdlePaused { get; }
+
+    /// <summary>Event fired when the tracker becomes idle (US5.3 - idle notification).</summary>
+    event Action? OnIdleDetected;
 }

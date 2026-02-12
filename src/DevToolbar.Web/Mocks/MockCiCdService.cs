@@ -4,13 +4,15 @@ using DevToolbar.Core.Interfaces;
 using DevToolbar.Core.Models;
 
 /// <summary>
-/// Mock CI/CD service with sample GitHub Actions data.
+/// Mock CI/CD service with sample GitHub Actions data and background polling support (US7.1).
 /// </summary>
 public class MockCiCdService : ICiCdService
 {
     private readonly List<CiCdSession> _sessions;
 
     public event Action? OnSessionsUpdated;
+
+    public TimeSpan PollingInterval => TimeSpan.FromSeconds(30);
 
     public MockCiCdService()
     {
@@ -24,7 +26,7 @@ public class MockCiCdService : ICiCdService
                 Conclusion = "success",
                 StartedAt = DateTime.Now.AddHours(-2),
                 CompletedAt = DateTime.Now.AddHours(-1).AddMinutes(-45),
-                Url = "#",
+                Url = "https://github.com/example/my-webapi/actions/runs/101",
                 Branch = "main",
                 IsRead = false
             },
@@ -36,7 +38,7 @@ public class MockCiCdService : ICiCdService
                 Conclusion = "failure",
                 StartedAt = DateTime.Now.AddHours(-1),
                 CompletedAt = DateTime.Now.AddMinutes(-30),
-                Url = "#",
+                Url = "https://github.com/example/my-webapi/actions/runs/102",
                 Branch = "feature/login",
                 IsRead = false
             },
@@ -46,11 +48,38 @@ public class MockCiCdService : ICiCdService
                 Name = "Code Analysis",
                 Status = CiCdStatus.InProgress,
                 StartedAt = DateTime.Now.AddMinutes(-5),
-                Url = "#",
+                Url = "https://github.com/example/my-webapi/actions/runs/103",
                 Branch = "main",
                 IsRead = false
             }
         };
+    }
+
+    public async Task StartPollingAsync(string projectId, CancellationToken cancellationToken = default)
+    {
+        // Simulated background polling (US7.1)
+        try
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                await Task.Delay(PollingInterval, cancellationToken);
+
+                // In a real implementation, this would call the GitHub API
+                // For mock, we simulate an in-progress session completing
+                var inProgress = _sessions.FirstOrDefault(s => s.Status == CiCdStatus.InProgress);
+                if (inProgress != null && DateTime.Now - inProgress.StartedAt > TimeSpan.FromMinutes(1))
+                {
+                    inProgress.Status = CiCdStatus.Completed;
+                    inProgress.Conclusion = "success";
+                    inProgress.CompletedAt = DateTime.Now;
+                    OnSessionsUpdated?.Invoke();
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Polling cancelled - expected when project changes or app shuts down
+        }
     }
 
     public Task<IReadOnlyList<CiCdSession>> GetSessionsAsync(string projectId) =>
