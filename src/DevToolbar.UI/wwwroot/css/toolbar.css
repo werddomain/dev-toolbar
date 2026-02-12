@@ -1183,6 +1183,93 @@ body {
     font-style: italic;
 }
 
+/* Timer Work Item Association (US5.3) */
+.timer-workitem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background-color: var(--bg-tertiary);
+    border-radius: 4px;
+    font-size: 0.85em;
+    margin-top: 4px;
+}
+
+.timer-workitem-label {
+    font-size: 0.9em;
+}
+
+.timer-workitem-id {
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+.timer-workitem-title {
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+.timer-workitem-none {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 0.85em;
+}
+
+/* Time Report Grouped View (US5.4) */
+.time-report-grouped {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.time-report-group {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.time-report-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: var(--bg-tertiary);
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.time-report-group-key {
+    color: var(--accent-color);
+}
+
+.time-report-group-total {
+    color: var(--text-primary);
+    font-family: 'Consolas', monospace;
+}
+
+.time-report-group-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.85em;
+    color: var(--text-secondary);
+}
+
+/* Settings Link */
+.settings-link {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+.settings-link:hover {
+    text-decoration: underline;
+}
+
 /* Settings Toggle Switch */
 .settings-toggle {
     position: relative;

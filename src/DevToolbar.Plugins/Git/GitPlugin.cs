@@ -29,7 +29,7 @@ public class GitPlugin : IPlugin
 
     public Task OnProjectChangedAsync(PluginContext context)
     {
-        _currentBranch = "main";
+        _currentBranch = context.Project.DefaultBranch;
         _isDirty = false;
         _syncStatus = string.Empty;
         return Task.CompletedTask;

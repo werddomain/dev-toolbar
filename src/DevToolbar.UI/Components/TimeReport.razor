@@ -18,6 +18,11 @@
                 <option value="week" selected="@(_period == "week")">This Week</option>
                 <option value="month" selected="@(_period == "month")">This Month</option>
             </select>
+            <select class="time-report-filter" @onchange="OnGroupByChanged">
+                <option value="none" selected="@(_groupBy == "none")">No Grouping</option>
+                <option value="workitem" selected="@(_groupBy == "workitem")">By Work Item</option>
+                <option value="day" selected="@(_groupBy == "day")">By Day</option>
+            </select>
             <button class="time-report-export" @onclick="ExportCsv" title="Export to CSV">📥 Export CSV</button>
         </div>
 
@@ -29,25 +34,78 @@
                     <span class="time-report-total-value">@FormatDuration(_totalDuration)</span>
                 </div>
 
-                <table class="time-report-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Duration</th>
-                            <th>Work Item</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var entry in _entries)
+                @if (_groupBy == "workitem")
+                {
+                    var grouped = _entries.GroupBy(e => e.WorkItemId ?? "(no work item)")
+                        .Select(g => new { Key = g.Key, Total = g.Aggregate(TimeSpan.Zero, (sum, e) => sum + e.Duration), Entries = g.ToList() })
+                        .OrderByDescending(g => g.Total);
+
+                    <div class="time-report-grouped">
+                        @foreach (var group in grouped)
                         {
-                            <tr class="time-report-row">
-                                <td>@entry.StartTime.ToString("yyyy-MM-dd HH:mm")</td>
-                                <td class="time-report-duration">@FormatDuration(entry.Duration)</td>
-                                <td>@(entry.WorkItemId ?? "—")</td>
-                            </tr>
+                            <div class="time-report-group">
+                                <div class="time-report-group-header">
+                                    <span class="time-report-group-key">📋 @(group.Key == "(no work item)" ? "No Work Item" : $"#{group.Key}")</span>
+                                    <span class="time-report-group-total">@FormatDuration(group.Total)</span>
+                                </div>
+                                @foreach (var entry in group.Entries)
+                                {
+                                    <div class="time-report-group-entry">
+                                        <span>@entry.StartTime.ToString("HH:mm")</span>
+                                        <span class="time-report-duration">@FormatDuration(entry.Duration)</span>
+                                    </div>
+                                }
+                            </div>
                         }
-                    </tbody>
-                </table>
+                    </div>
+                }
+                else if (_groupBy == "day")
+                {
+                    var grouped = _entries.GroupBy(e => e.StartTime.Date)
+                        .Select(g => new { Key = g.Key, Total = g.Aggregate(TimeSpan.Zero, (sum, e) => sum + e.Duration), Entries = g.ToList() })
+                        .OrderByDescending(g => g.Key);
+
+                    <div class="time-report-grouped">
+                        @foreach (var group in grouped)
+                        {
+                            <div class="time-report-group">
+                                <div class="time-report-group-header">
+                                    <span class="time-report-group-key">📅 @group.Key.ToString("ddd, MMM dd")</span>
+                                    <span class="time-report-group-total">@FormatDuration(group.Total)</span>
+                                </div>
+                                @foreach (var entry in group.Entries)
+                                {
+                                    <div class="time-report-group-entry">
+                                        <span>@entry.StartTime.ToString("HH:mm") — @(entry.WorkItemId != null ? $"#{entry.WorkItemId}" : "—")</span>
+                                        <span class="time-report-duration">@FormatDuration(entry.Duration)</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <table class="time-report-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Duration</th>
+                                <th>Work Item</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var entry in _entries)
+                            {
+                                <tr class="time-report-row">
+                                    <td>@entry.StartTime.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td class="time-report-duration">@FormatDuration(entry.Duration)</td>
+                                    <td>@(entry.WorkItemId != null ? $"#{entry.WorkItemId}" : "—")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
             }
             else
             {
@@ -66,6 +124,7 @@
 
     private bool _isVisible;
     private string _period = "day";
+    private string _groupBy = "none";
     private IReadOnlyList<TimeEntry>? _entries;
     private TimeSpan _totalDuration;
 
@@ -98,6 +157,12 @@
     private async Task OnPeriodChanged(ChangeEventArgs e)
     {
         _period = e.Value?.ToString() ?? "day";
+        await LoadEntries();
+    }
+
+    private async Task OnGroupByChanged(ChangeEventArgs e)
+    {
+        _groupBy = e.Value?.ToString() ?? "none";
         await LoadEntries();
     }
 

@@ -27,4 +27,10 @@ public class ProjectConfig
 
     [JsonPropertyName("actions")]
     public List<ActionConfig> Actions { get; set; } = new();
+
+    [JsonPropertyName("defaultBranch")]
+    public string DefaultBranch { get; set; } = "main";
+
+    [JsonPropertyName("repositoryUrl")]
+    public string RepositoryUrl { get; set; } = string.Empty;
 }

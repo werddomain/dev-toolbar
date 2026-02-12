@@ -23,6 +23,8 @@ public class MockSettingsService : ISettingsService
                 Name = "MyWebAPI",
                 Path = "/projects/my-webapi",
                 ProjectType = "WebApi",
+                DefaultBranch = "develop",
+                RepositoryUrl = "https://github.com/example/my-webapi",
                 Theme = new ThemeConfig { AccentColor = "#0078D7" },
                 EnabledPlugins = new List<string> { "git-tools", "work-items", "time-tracker", "github-agents" },
                 Actions = new List<ActionConfig>
@@ -39,6 +41,8 @@ public class MockSettingsService : ISettingsService
                 Name = "FrontEnd App",
                 Path = "/projects/frontend",
                 ProjectType = "SPA",
+                DefaultBranch = "main",
+                RepositoryUrl = "https://github.com/example/frontend-app",
                 Theme = new ThemeConfig { AccentColor = "#4CAF50" },
                 EnabledPlugins = new List<string> { "git-tools", "work-items", "time-tracker" },
                 Actions = new List<ActionConfig>
@@ -54,6 +58,8 @@ public class MockSettingsService : ISettingsService
                 Name = "DevOps Pipeline",
                 Path = "/projects/devops",
                 ProjectType = "Infrastructure",
+                DefaultBranch = "release/1.0",
+                RepositoryUrl = "https://dev.azure.com/example/devops-pipeline",
                 Theme = new ThemeConfig { AccentColor = "#E53935" },
                 EnabledPlugins = new List<string> { "git-tools", "github-agents" },
                 Actions = new List<ActionConfig>
@@ -77,6 +83,16 @@ public class MockSettingsService : ISettingsService
         if (_activeProject != null)
         {
             OnActiveProjectChanged?.Invoke(_activeProject);
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task SaveProjectAsync(ProjectConfig project)
+    {
+        var index = _projects.FindIndex(p => p.Id == project.Id);
+        if (index >= 0)
+        {
+            _projects[index] = project;
         }
         return Task.CompletedTask;
     }

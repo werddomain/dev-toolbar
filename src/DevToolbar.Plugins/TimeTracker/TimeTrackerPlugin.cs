@@ -1,5 +1,6 @@
 namespace DevToolbar.Plugins.TimeTracker;
 
+using DevToolbar.Core.Events;
 using DevToolbar.Core.Interfaces;
 using DevToolbar.Core.Models;
 using Microsoft.AspNetCore.Components;
@@ -7,10 +8,12 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 /// <summary>
 /// Plugin for tracking time spent on projects with idle detection (US5.3).
+/// Associates time entries with the active work item (US5.3/US5.4).
 /// </summary>
 public class TimeTrackerPlugin : IPlugin
 {
     private readonly ITimeTrackingService _timeService;
+    private readonly EventAggregator _eventAggregator;
 
     public string UniqueId => "time-tracker";
     public string Name => "Time Tracker";
@@ -19,15 +22,30 @@ public class TimeTrackerPlugin : IPlugin
     public event Action? OnStateChanged;
 
     private string _currentProjectId = string.Empty;
+    private string? _activeWorkItemId;
+    private string? _activeWorkItemTitle;
 
-    public TimeTrackerPlugin(ITimeTrackingService timeService)
+    public TimeTrackerPlugin(ITimeTrackingService timeService, EventAggregator eventAggregator)
     {
         _timeService = timeService;
+        _eventAggregator = eventAggregator;
+
+        // Subscribe to work item changes from WorkItemsPlugin
+        _eventAggregator.Subscribe<ActiveWorkItemChangedEvent>(OnWorkItemChanged);
+    }
+
+    private void OnWorkItemChanged(ActiveWorkItemChangedEvent evt)
+    {
+        _activeWorkItemId = evt.WorkItemId;
+        _activeWorkItemTitle = evt.WorkItemTitle;
+        OnStateChanged?.Invoke();
     }
 
     public Task OnProjectChangedAsync(PluginContext context)
     {
         _currentProjectId = context.Project.Id;
+        _activeWorkItemId = null;
+        _activeWorkItemTitle = null;
         return Task.CompletedTask;
     }
 
@@ -53,7 +71,7 @@ public class TimeTrackerPlugin : IPlugin
             if (isRunning)
                 _timeService.Stop();
             else
-                _timeService.Start(_currentProjectId);
+                _timeService.Start(_currentProjectId, _activeWorkItemId);
             OnStateChanged?.Invoke();
         }));
         builder.AddContent(7, isRunning ? "⏹ Stop" : "▶ Start");
@@ -74,6 +92,36 @@ public class TimeTrackerPlugin : IPlugin
         builder.CloseElement();
 
         builder.CloseElement(); // timer-controls
+
+        // Active work item indicator
+        builder.OpenElement(30, "div");
+        builder.AddAttribute(31, "class", "timer-workitem");
+        if (!string.IsNullOrEmpty(_activeWorkItemId))
+        {
+            builder.OpenElement(32, "span");
+            builder.AddAttribute(33, "class", "timer-workitem-label");
+            builder.AddContent(34, "📋");
+            builder.CloseElement();
+            builder.OpenElement(35, "span");
+            builder.AddAttribute(36, "class", "timer-workitem-id");
+            builder.AddContent(37, $"#{_activeWorkItemId}");
+            builder.CloseElement();
+            if (!string.IsNullOrEmpty(_activeWorkItemTitle))
+            {
+                builder.OpenElement(38, "span");
+                builder.AddAttribute(39, "class", "timer-workitem-title");
+                builder.AddContent(40, _activeWorkItemTitle);
+                builder.CloseElement();
+            }
+        }
+        else
+        {
+            builder.OpenElement(32, "span");
+            builder.AddAttribute(33, "class", "timer-workitem-none");
+            builder.AddContent(34, "No work item linked");
+            builder.CloseElement();
+        }
+        builder.CloseElement(); // timer-workitem
 
         // Timer display
         builder.OpenElement(11, "div");

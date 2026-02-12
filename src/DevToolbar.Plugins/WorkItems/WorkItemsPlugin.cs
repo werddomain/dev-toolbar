@@ -1,5 +1,6 @@
 namespace DevToolbar.Plugins.WorkItems;
 
+using DevToolbar.Core.Events;
 using DevToolbar.Core.Interfaces;
 using DevToolbar.Core.Models;
 using Microsoft.AspNetCore.Components;
@@ -8,10 +9,12 @@ using Microsoft.AspNetCore.Components.Rendering;
 /// <summary>
 /// Plugin for displaying and managing work items (TFS/GitHub Issues).
 /// Supports dropdown search/select to change active item (US5.2).
+/// Publishes ActiveWorkItemChangedEvent for TimeTracker integration (US5.3).
 /// </summary>
 public class WorkItemsPlugin : IPlugin
 {
     private readonly IWorkItemProvider _provider;
+    private readonly EventAggregator _eventAggregator;
 
     public string UniqueId => "work-items";
     public string Name => "Work Items";
@@ -25,9 +28,10 @@ public class WorkItemsPlugin : IPlugin
     private bool _showSearch;
     private string _searchQuery = string.Empty;
 
-    public WorkItemsPlugin(IWorkItemProvider provider)
+    public WorkItemsPlugin(IWorkItemProvider provider, EventAggregator eventAggregator)
     {
         _provider = provider;
+        _eventAggregator = eventAggregator;
     }
 
     public async Task OnProjectChangedAsync(PluginContext context)
@@ -38,6 +42,14 @@ public class WorkItemsPlugin : IPlugin
         _showSearch = false;
         _searchQuery = string.Empty;
         _searchResults = Array.Empty<WorkItem>();
+
+        // Notify TimeTracker of active work item
+        _eventAggregator.Publish(new ActiveWorkItemChangedEvent
+        {
+            WorkItemId = _activeItem?.Id,
+            WorkItemTitle = _activeItem?.Title
+        });
+
         OnStateChanged?.Invoke();
     }
 
@@ -139,6 +151,14 @@ public class WorkItemsPlugin : IPlugin
                         _showSearch = false;
                         _searchQuery = string.Empty;
                         _searchResults = Array.Empty<WorkItem>();
+
+                        // Notify TimeTracker of work item change
+                        _eventAggregator.Publish(new ActiveWorkItemChangedEvent
+                        {
+                            WorkItemId = capturedItem.Id,
+                            WorkItemTitle = capturedItem.Title
+                        });
+
                         OnStateChanged?.Invoke();
                     }));
 

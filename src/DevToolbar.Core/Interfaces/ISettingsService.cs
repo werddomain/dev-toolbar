@@ -16,6 +16,9 @@ public interface ISettingsService
     /// <summary>Set the active project by ID.</summary>
     Task SetActiveProjectAsync(string projectId);
 
+    /// <summary>Save changes to a project configuration (US8.3).</summary>
+    Task SaveProjectAsync(ProjectConfig project);
+
     /// <summary>Event fired when the active project changes.</summary>
     event Action<ProjectConfig>? OnActiveProjectChanged;
 }

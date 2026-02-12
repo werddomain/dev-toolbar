@@ -79,18 +79,31 @@ public class JsonSettingsService : ISettingsService
         if (_activeProject != null)
         {
             OnActiveProjectChanged?.Invoke(_activeProject);
-
-            // Persist selection
-            var configFile = Path.Combine(_configDir, "config.json");
-            Directory.CreateDirectory(_configDir);
-            var config = new AppConfig
-            {
-                ActiveProjectId = projectId,
-                Projects = _projects
-            };
-            var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
-            await _fileSystem.WriteFileAsync(configFile, json);
+            await PersistConfigAsync();
         }
+    }
+
+    public async Task SaveProjectAsync(ProjectConfig project)
+    {
+        var index = _projects.FindIndex(p => p.Id == project.Id);
+        if (index >= 0)
+        {
+            _projects[index] = project;
+        }
+        await PersistConfigAsync();
+    }
+
+    private async Task PersistConfigAsync()
+    {
+        var configFile = Path.Combine(_configDir, "config.json");
+        Directory.CreateDirectory(_configDir);
+        var config = new AppConfig
+        {
+            ActiveProjectId = _activeProject?.Id,
+            Projects = _projects
+        };
+        var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
+        await _fileSystem.WriteFileAsync(configFile, json);
     }
 
     private class AppConfig

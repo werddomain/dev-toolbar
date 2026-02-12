@@ -29,6 +29,17 @@
                     <label>Path</label>
                     <span class="settings-value settings-path">@_activeProject.Path</span>
                 </div>
+                <div class="settings-field">
+                    <label>Default Branch</label>
+                    <span class="settings-value">@_activeProject.DefaultBranch</span>
+                </div>
+                @if (!string.IsNullOrEmpty(_activeProject.RepositoryUrl))
+                {
+                    <div class="settings-field">
+                        <label>Repository</label>
+                        <a href="@_activeProject.RepositoryUrl" target="_blank" class="settings-value settings-link">@_activeProject.RepositoryUrl</a>
+                    </div>
+                }
             </section>
 
             <section class="settings-section">
