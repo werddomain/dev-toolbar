@@ -111,7 +111,8 @@ Then open `http://localhost:5280` in your browser.
 
 ### Run E2E Tests
 ```bash
-# Install Playwright browsers (first time only)
+# Install Playwright browsers (first time only, path may vary by build configuration)
+dotnet build tests/DevToolbar.Tests.E2E
 pwsh tests/DevToolbar.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install chromium
 
 # Run tests

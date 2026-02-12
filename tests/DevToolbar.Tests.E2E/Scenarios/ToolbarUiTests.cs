@@ -76,15 +76,16 @@ public class ToolbarUiTests : PageTest
         await Page.GotoAsync(BaseUrl, new() { WaitUntil = WaitUntilState.Load });
         // The SSR-rendered content includes .toolbar-shell immediately
         await Expect(Page.Locator(".toolbar-shell")).ToBeVisibleAsync(new() { Timeout = 30000 });
-        // Wait for interactive mode to stabilize
-        await Page.WaitForTimeoutAsync(500);
+        // Wait for interactive mode by checking that the project selector is functional
+        await Expect(Page.Locator(".project-selector select")).ToBeVisibleAsync(new() { Timeout = 5000 });
         // Ensure MyWebAPI is the active project (may have been changed by other test classes)
         var select = Page.Locator(".project-selector select");
         var currentValue = await select.InputValueAsync();
         if (currentValue != "proj-webapi")
         {
             await select.SelectOptionAsync("proj-webapi");
-            await Page.WaitForTimeoutAsync(500);
+            // Wait for footer to reflect the change
+            await Expect(Page.Locator(".footer-project")).ToContainTextAsync("MyWebAPI", new() { Timeout = 5000 });
         }
     }
 

@@ -78,8 +78,8 @@ public class ScreenshotTests : PageTest
     {
         await Page.GotoAsync(BaseUrl, new() { WaitUntil = WaitUntilState.Load });
         await Expect(Page.Locator(".toolbar-shell")).ToBeVisibleAsync(new() { Timeout = 30000 });
-        // Wait for Blazor Interactive mode to stabilize (SSR -> Interactive transition)
-        await Page.WaitForTimeoutAsync(1000);
+        // Wait for interactive mode by checking that plugin panels are rendered
+        await Expect(Page.Locator(".plugin-panel").First).ToBeVisibleAsync(new() { Timeout = 5000 });
     }
 
     private string ScreenshotPath(string name) => Path.Combine(_screenshotsDir, $"{name}.png");
@@ -98,9 +98,8 @@ public class ScreenshotTests : PageTest
     public async Task Capture_02_GitPlugin()
     {
         await NavigateAndWait();
-        var gitPlugin = Page.Locator(".plugin-panel", new() { Has = Page.Locator(".git-branch") });
-        await Expect(gitPlugin).ToBeVisibleAsync();
-        await gitPlugin.ScreenshotAsync(new() { Path = ScreenshotPath("02-git-plugin") });
+        await Expect(Page.Locator(".git-branch")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("02-git-plugin"), FullPage = true });
         Assert.That(File.Exists(ScreenshotPath("02-git-plugin")), Is.True);
     }
 
@@ -121,6 +120,7 @@ public class ScreenshotTests : PageTest
     {
         await NavigateAndWait();
         // Open search dropdown
+        await Expect(Page.Locator(".workitem-search-toggle")).ToBeVisibleAsync(new() { Timeout = 5000 });
         await Page.Locator(".workitem-search-toggle").ClickAsync();
         await Expect(Page.Locator(".workitem-search-input")).ToBeVisibleAsync(new() { Timeout = 5000 });
 
@@ -128,8 +128,7 @@ public class ScreenshotTests : PageTest
         await Page.Locator(".workitem-search-input").PressSequentiallyAsync("dark");
         await Expect(Page.Locator(".workitem-dropdown-item")).ToHaveCountAsync(1, new() { Timeout = 5000 });
 
-        var workItemsPlugin = Page.Locator(".plugin-panel", new() { Has = Page.Locator(".workitem-search-input") });
-        await workItemsPlugin.ScreenshotAsync(new() { Path = ScreenshotPath("04-workitems-search") });
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("04-workitems-search"), FullPage = true });
         Assert.That(File.Exists(ScreenshotPath("04-workitems-search")), Is.True);
     }
 
@@ -138,7 +137,6 @@ public class ScreenshotTests : PageTest
     {
         await NavigateAndWait();
         await Expect(Page.Locator(".timer-status")).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Page.Locator(".timer-status").ScrollIntoViewIfNeededAsync();
         await Page.ScreenshotAsync(new() { Path = ScreenshotPath("05-time-tracker-plugin"), FullPage = true });
         Assert.That(File.Exists(ScreenshotPath("05-time-tracker-plugin")), Is.True);
     }
@@ -148,7 +146,7 @@ public class ScreenshotTests : PageTest
     {
         await NavigateAndWait();
         await Expect(Page.Locator(".cicd-label")).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Page.Locator(".cicd-label").ScrollIntoViewIfNeededAsync();
+        // Use full page screenshot to avoid element detachment during SSR-to-Interactive transition
         await Page.ScreenshotAsync(new() { Path = ScreenshotPath("06-cicd-plugin"), FullPage = true });
         Assert.That(File.Exists(ScreenshotPath("06-cicd-plugin")), Is.True);
     }
@@ -158,7 +156,7 @@ public class ScreenshotTests : PageTest
     {
         await NavigateAndWait();
         await Expect(Page.Locator(".action-button").First).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Page.Locator(".action-button").First.ScrollIntoViewIfNeededAsync();
+        // Use full page screenshot to avoid element detachment during SSR-to-Interactive transition
         await Page.ScreenshotAsync(new() { Path = ScreenshotPath("07-action-deck"), FullPage = true });
         Assert.That(File.Exists(ScreenshotPath("07-action-deck")), Is.True);
     }
@@ -196,12 +194,12 @@ public class ScreenshotTests : PageTest
     public async Task Capture_11_ProjectSwitchDevOps()
     {
         await NavigateAndWait();
-        // Switch to DevOps Pipeline project — need interactive mode for select to work
+        // Switch to DevOps Pipeline project — wait for plugins to update
         var select = Page.Locator(".project-selector select");
         await Expect(select).ToBeVisibleAsync(new() { Timeout = 5000 });
         await select.SelectOptionAsync("proj-devops");
-        // Wait for plugins to update (may need a moment after interactive switch)
-        await Page.WaitForTimeoutAsync(1000);
+        // Wait for footer to reflect the new project name
+        await Expect(Page.Locator(".footer-project")).ToContainTextAsync("DevOps Pipeline", new() { Timeout = 5000 });
         await Page.ScreenshotAsync(new() { Path = ScreenshotPath("11-project-switch-devops"), FullPage = true });
         Assert.That(File.Exists(ScreenshotPath("11-project-switch-devops")), Is.True);
     }
@@ -212,7 +210,8 @@ public class ScreenshotTests : PageTest
         await NavigateAndWait();
         // Switch to FrontEnd App project (3 enabled plugins: git-tools, work-items, time-tracker)
         await Page.Locator(".project-selector select").SelectOptionAsync("proj-frontend");
-        await Page.WaitForTimeoutAsync(1000);
+        // Wait for footer to reflect the new project name
+        await Expect(Page.Locator(".footer-project")).ToContainTextAsync("FrontEnd App", new() { Timeout = 5000 });
         await Page.ScreenshotAsync(new() { Path = ScreenshotPath("12-project-switch-frontend"), FullPage = true });
         Assert.That(File.Exists(ScreenshotPath("12-project-switch-frontend")), Is.True);
     }
