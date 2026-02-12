@@ -35,8 +35,8 @@
     padding: 0 8px;
     gap: 6px;
     flex-shrink: 0;
+    /* Simulates MAUI's -webkit-app-region: drag for title bar dragging (no effect in web context) */
     user-select: none;
-    -webkit-app-region: drag;
 }
 
 .maui-titlebar-icon {
