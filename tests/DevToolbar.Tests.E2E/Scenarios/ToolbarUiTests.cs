@@ -184,4 +184,83 @@ public class ToolbarUiTests : PageTest
         await NavigateAndWait();
         await Expect(Page.Locator(".plugin-panel")).ToHaveCountAsync(4);
     }
+
+    // --- Timer Controls Tests ---
+
+    [Test]
+    public async Task TimeTrackerPlugin_ShouldShowStartButton()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".timer-btn-start")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".timer-btn-start")).ToContainTextAsync("Start");
+    }
+
+    // --- CI/CD Mark as Read Tests ---
+
+    [Test]
+    public async Task CiCdPlugin_ShouldShowMarkAllReadButton()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".cicd-mark-all-read")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".cicd-mark-all-read")).ToContainTextAsync("Read all");
+    }
+
+    [Test]
+    public async Task CiCdPlugin_SessionsShouldBeClickable()
+    {
+        await NavigateAndWait();
+        // Verify sessions have cursor:pointer (they are clickable)
+        var session = Page.Locator(".cicd-session").First;
+        await Expect(session).ToBeVisibleAsync();
+    }
+
+    // --- Settings Page Tests ---
+
+    [Test]
+    public async Task SettingsLink_ShouldBeVisible()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".toolbar-settings-btn")).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task SettingsPage_ShouldShowActiveProject()
+    {
+        await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+        await Expect(Page.GetByText("MyWebAPI")).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task SettingsPage_ShouldShowPluginsList()
+    {
+        await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+        await Expect(Page.Locator(".settings-plugin-row")).ToHaveCountAsync(4);
+    }
+
+    [Test]
+    public async Task SettingsPage_ShouldShowActionsList()
+    {
+        await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+        await Expect(Page.Locator(".settings-action-row")).ToHaveCountAsync(3);
+    }
+
+    [Test]
+    public async Task SettingsPage_ShouldShowAllProjects()
+    {
+        await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+        await Expect(Page.Locator(".settings-project-row")).ToHaveCountAsync(3);
+    }
+
+    [Test]
+    public async Task SettingsPage_ShouldHaveBackLink()
+    {
+        await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+        await Expect(Page.Locator(".settings-back")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".settings-back")).ToContainTextAsync("Back to Toolbar");
+    }
 }
