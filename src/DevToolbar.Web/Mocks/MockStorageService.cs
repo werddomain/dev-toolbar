@@ -66,8 +66,9 @@ public class MockStorageService : IStorageService
         }
 
         var results = items
-            .Select(json => JsonSerializer.Deserialize<T>(json)!)
-            .Where(item => predicate == null || predicate(item))
+            .Select(json => JsonSerializer.Deserialize<T>(json))
+            .Where(item => item != null && (predicate == null || predicate(item)))
+            .Cast<T>()
             .ToList();
 
         return Task.FromResult<IReadOnlyList<T>>(results.AsReadOnly());

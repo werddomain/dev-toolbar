@@ -366,13 +366,11 @@ public class ToolbarUiTests : PageTest
 
         // Switch to DevOps Pipeline (has only git-tools, github-agents)
         await Page.Locator(".project-selector select").SelectOptionAsync("proj-devops");
-        await Task.Delay(500); // Wait for Blazor to re-render
-        await Expect(Page.Locator(".plugin-panel")).ToHaveCountAsync(2);
+        await Expect(Page.Locator(".plugin-panel")).ToHaveCountAsync(2, new() { Timeout = 5000 });
 
         // Switch back to MyWebAPI
         await Page.Locator(".project-selector select").SelectOptionAsync("proj-webapi");
-        await Task.Delay(500);
-        await Expect(Page.Locator(".plugin-panel")).ToHaveCountAsync(4);
+        await Expect(Page.Locator(".plugin-panel")).ToHaveCountAsync(4, new() { Timeout = 5000 });
     }
 
     [Test]
@@ -384,7 +382,6 @@ public class ToolbarUiTests : PageTest
 
         // Switch to FrontEnd App (has 3 actions)
         await Page.Locator(".project-selector select").SelectOptionAsync("proj-frontend");
-        await Task.Delay(500);
-        await Expect(Page.Locator(".action-button")).ToHaveCountAsync(3);
+        await Expect(Page.Locator(".action-button")).ToHaveCountAsync(3, new() { Timeout = 5000 });
     }
 }

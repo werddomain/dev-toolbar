@@ -3,7 +3,7 @@ namespace DevToolbar.Maui;
 /// <summary>
 /// Main page hosting the Blazor WebView.
 /// </summary>
-public partial class MainPage : ContentPage
+public class MainPage : ContentPage
 {
     public MainPage()
     {
