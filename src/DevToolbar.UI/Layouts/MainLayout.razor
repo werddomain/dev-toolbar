@@ -55,14 +55,14 @@
     private string _activeProjectName = "";
     private int _pluginCount;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         SettingsService.OnActiveProjectChanged += OnProjectChanged;
 
         var project = SettingsService.GetActiveProject();
         if (project != null)
         {
-            ApplyProject(project);
+            await ApplyProjectAsync(project);
         }
     }
 
@@ -79,7 +79,7 @@
         _ = InvokeAsync(StateHasChanged);
     }
 
-    private void ApplyProject(ProjectConfig project)
+    private async Task ApplyProjectAsync(ProjectConfig project)
     {
         _actions = project.Actions;
         _activeProjectName = project.Name;
@@ -94,17 +94,15 @@
         _pluginCount = _visiblePlugins.Count;
 
         var context = new PluginContext { Project = project };
-        foreach (var plugin in allPlugins)
-        {
-            _ = plugin.OnProjectChangedAsync(context);
-        }
+        var tasks = allPlugins.Select(p => p.OnProjectChangedAsync(context));
+        await Task.WhenAll(tasks);
     }
 
     private void OnProjectChanged(ProjectConfig project)
     {
-        InvokeAsync(() =>
+        InvokeAsync(async () =>
         {
-            ApplyProject(project);
+            await ApplyProjectAsync(project);
             StateHasChanged();
         });
     }

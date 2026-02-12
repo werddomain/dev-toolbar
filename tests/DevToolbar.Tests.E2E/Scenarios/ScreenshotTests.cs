@@ -1,0 +1,219 @@
+namespace DevToolbar.Tests.E2E.Scenarios;
+
+using Microsoft.Playwright;
+using Microsoft.Playwright.NUnit;
+
+/// <summary>
+/// Playwright tests that capture screenshots for project documentation.
+/// Screenshots are saved to doc/screenshots/ in the repository root.
+/// </summary>
+[TestFixture]
+[Parallelizable(ParallelScope.None)]
+public class ScreenshotTests : PageTest
+{
+    private const string BaseUrl = "http://localhost:5280";
+    private System.Diagnostics.Process? _serverProcess;
+    private string _screenshotsDir = null!;
+
+    [OneTimeSetUp]
+    public async Task OneTimeSetUp()
+    {
+        // Resolve doc/screenshots directory relative to test project
+        _screenshotsDir = Path.GetFullPath(
+            Path.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", "..",
+                "doc", "screenshots"));
+        Directory.CreateDirectory(_screenshotsDir);
+
+        // Start the web server
+        var projectPath = Path.GetFullPath(
+            Path.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", "..",
+                "src", "DevToolbar.Web"));
+
+        _serverProcess = new System.Diagnostics.Process
+        {
+            StartInfo = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = $"run --project \"{projectPath}\" --urls {BaseUrl}",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+                Environment = { ["ASPNETCORE_ENVIRONMENT"] = "Development" }
+            }
+        };
+
+        _serverProcess.Start();
+
+        // Wait for server to be ready
+        using var httpClient = new HttpClient();
+        var maxRetries = 60;
+        for (var i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                var response = await httpClient.GetAsync(BaseUrl);
+                if (response.IsSuccessStatusCode)
+                    break;
+            }
+            catch
+            {
+                // Server not ready yet
+            }
+            await Task.Delay(1000);
+        }
+    }
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
+        if (_serverProcess != null && !_serverProcess.HasExited)
+        {
+            _serverProcess.Kill(entireProcessTree: true);
+            _serverProcess.Dispose();
+        }
+    }
+
+    private async Task NavigateAndWait()
+    {
+        await Page.GotoAsync(BaseUrl, new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".toolbar-shell")).ToBeVisibleAsync(new() { Timeout = 30000 });
+        // Wait for Blazor Interactive mode to stabilize (SSR -> Interactive transition)
+        await Page.WaitForTimeoutAsync(1000);
+    }
+
+    private string ScreenshotPath(string name) => Path.Combine(_screenshotsDir, $"{name}.png");
+
+    // ─── Screenshot Capture Tests ───
+
+    [Test, Order(1)]
+    public async Task Capture_01_MainToolbar()
+    {
+        await NavigateAndWait();
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("01-main-toolbar"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("01-main-toolbar")), Is.True);
+    }
+
+    [Test, Order(2)]
+    public async Task Capture_02_GitPlugin()
+    {
+        await NavigateAndWait();
+        var gitPlugin = Page.Locator(".plugin-panel", new() { Has = Page.Locator(".git-branch") });
+        await Expect(gitPlugin).ToBeVisibleAsync();
+        await gitPlugin.ScreenshotAsync(new() { Path = ScreenshotPath("02-git-plugin") });
+        Assert.That(File.Exists(ScreenshotPath("02-git-plugin")), Is.True);
+    }
+
+    [Test, Order(3)]
+    public async Task Capture_03_WorkItemsPlugin()
+    {
+        await NavigateAndWait();
+        // workitem-id is rendered by RenderTreeBuilder plugin after OnProjectChangedAsync completes
+        // Wait for any plugin panel with work items content to appear
+        var workItemsContent = Page.Locator(".plugin-workitems");
+        await Expect(workItemsContent).ToBeVisibleAsync(new() { Timeout = 10000 });
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("03-workitems-plugin"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("03-workitems-plugin")), Is.True);
+    }
+
+    [Test, Order(4)]
+    public async Task Capture_04_WorkItemsSearch()
+    {
+        await NavigateAndWait();
+        // Open search dropdown
+        await Page.Locator(".workitem-search-toggle").ClickAsync();
+        await Expect(Page.Locator(".workitem-search-input")).ToBeVisibleAsync(new() { Timeout = 5000 });
+
+        // Type a search query
+        await Page.Locator(".workitem-search-input").PressSequentiallyAsync("dark");
+        await Expect(Page.Locator(".workitem-dropdown-item")).ToHaveCountAsync(1, new() { Timeout = 5000 });
+
+        var workItemsPlugin = Page.Locator(".plugin-panel", new() { Has = Page.Locator(".workitem-search-input") });
+        await workItemsPlugin.ScreenshotAsync(new() { Path = ScreenshotPath("04-workitems-search") });
+        Assert.That(File.Exists(ScreenshotPath("04-workitems-search")), Is.True);
+    }
+
+    [Test, Order(5)]
+    public async Task Capture_05_TimeTrackerPlugin()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".timer-status")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Page.Locator(".timer-status").ScrollIntoViewIfNeededAsync();
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("05-time-tracker-plugin"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("05-time-tracker-plugin")), Is.True);
+    }
+
+    [Test, Order(6)]
+    public async Task Capture_06_CiCdPlugin()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".cicd-label")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Page.Locator(".cicd-label").ScrollIntoViewIfNeededAsync();
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("06-cicd-plugin"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("06-cicd-plugin")), Is.True);
+    }
+
+    [Test, Order(7)]
+    public async Task Capture_07_ActionDeck()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".action-button").First).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Page.Locator(".action-button").First.ScrollIntoViewIfNeededAsync();
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("07-action-deck"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("07-action-deck")), Is.True);
+    }
+
+    [Test, Order(8)]
+    public async Task Capture_08_TimeReportModal()
+    {
+        await NavigateAndWait();
+        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("08-time-report-modal"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("08-time-report-modal")), Is.True);
+    }
+
+    [Test, Order(9)]
+    public async Task Capture_09_TerminalOutput()
+    {
+        await NavigateAndWait();
+        await Page.Locator(".action-button", new() { HasText = "Build Script" }).ClickAsync();
+        await Expect(Page.Locator(".terminal-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("09-terminal-output"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("09-terminal-output")), Is.True);
+    }
+
+    [Test, Order(10)]
+    public async Task Capture_10_SettingsPage()
+    {
+        await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("10-settings-page"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("10-settings-page")), Is.True);
+    }
+
+    [Test, Order(11)]
+    public async Task Capture_11_ProjectSwitchDevOps()
+    {
+        await NavigateAndWait();
+        // Switch to DevOps Pipeline project — need interactive mode for select to work
+        var select = Page.Locator(".project-selector select");
+        await Expect(select).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await select.SelectOptionAsync("proj-devops");
+        // Wait for plugins to update (may need a moment after interactive switch)
+        await Page.WaitForTimeoutAsync(1000);
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("11-project-switch-devops"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("11-project-switch-devops")), Is.True);
+    }
+
+    [Test, Order(12)]
+    public async Task Capture_12_ProjectSwitchFrontEnd()
+    {
+        await NavigateAndWait();
+        // Switch to FrontEnd App project (3 enabled plugins: git-tools, work-items, time-tracker)
+        await Page.Locator(".project-selector select").SelectOptionAsync("proj-frontend");
+        await Page.WaitForTimeoutAsync(1000);
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("12-project-switch-frontend"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("12-project-switch-frontend")), Is.True);
+    }
+}

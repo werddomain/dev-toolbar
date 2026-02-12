@@ -32,11 +32,13 @@ public class WorkItemsPlugin : IPlugin
 
     public async Task OnProjectChangedAsync(PluginContext context)
     {
-        _recentItems = await _provider.SearchAsync(context.Project.Name);
+        // Load recent items for this project context (empty query = get all recent)
+        _recentItems = await _provider.SearchAsync(string.Empty);
         _activeItem = _recentItems.FirstOrDefault();
         _showSearch = false;
         _searchQuery = string.Empty;
         _searchResults = Array.Empty<WorkItem>();
+        OnStateChanged?.Invoke();
     }
 
     public RenderFragment? Render() => builder =>

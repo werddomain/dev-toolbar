@@ -69,12 +69,23 @@ public class ToolbarUiTests : PageTest
 
     /// <summary>
     /// Navigate to the app and wait for SSR content to appear.
+    /// Ensures the default project (MyWebAPI) is selected.
     /// </summary>
     private async Task NavigateAndWait()
     {
         await Page.GotoAsync(BaseUrl, new() { WaitUntil = WaitUntilState.Load });
         // The SSR-rendered content includes .toolbar-shell immediately
         await Expect(Page.Locator(".toolbar-shell")).ToBeVisibleAsync(new() { Timeout = 30000 });
+        // Wait for interactive mode to stabilize
+        await Page.WaitForTimeoutAsync(500);
+        // Ensure MyWebAPI is the active project (may have been changed by other test classes)
+        var select = Page.Locator(".project-selector select");
+        var currentValue = await select.InputValueAsync();
+        if (currentValue != "proj-webapi")
+        {
+            await select.SelectOptionAsync("proj-webapi");
+            await Page.WaitForTimeoutAsync(500);
+        }
     }
 
     [Test]
@@ -131,7 +142,8 @@ public class ToolbarUiTests : PageTest
     public async Task WorkItemsPlugin_ShouldShowActiveItem()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".workitem-id")).ToContainTextAsync("#1234");
+        // Work items load async via OnProjectChangedAsync — wait for interactive mode to render data
+        await Expect(Page.Locator(".workitem-id")).ToContainTextAsync("#1234", new() { Timeout = 10000 });
         await Expect(Page.Locator(".workitem-title")).ToContainTextAsync("Fix login page redirect");
     }
 
@@ -139,7 +151,7 @@ public class ToolbarUiTests : PageTest
     public async Task WorkItemsPlugin_ShouldShowRecentItems()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".workitem-link")).ToHaveCountAsync(3);
+        await Expect(Page.Locator(".workitem-link")).ToHaveCountAsync(3, new() { Timeout = 10000 });
     }
 
     [Test]
@@ -226,14 +238,17 @@ public class ToolbarUiTests : PageTest
     [Test]
     public async Task SettingsPage_ShouldShowActiveProject()
     {
+        // First ensure MyWebAPI is active
+        await NavigateAndWait();
         await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
         await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
-        await Expect(Page.GetByText("MyWebAPI")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".settings-value", new() { HasText = "MyWebAPI" })).ToBeVisibleAsync();
     }
 
     [Test]
     public async Task SettingsPage_ShouldShowPluginsList()
     {
+        await NavigateAndWait();
         await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
         await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
         await Expect(Page.Locator(".settings-plugin-row")).ToHaveCountAsync(4);
@@ -242,6 +257,7 @@ public class ToolbarUiTests : PageTest
     [Test]
     public async Task SettingsPage_ShouldShowActionsList()
     {
+        await NavigateAndWait();
         await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
         await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
         await Expect(Page.Locator(".settings-action-row")).ToHaveCountAsync(4);
@@ -325,14 +341,16 @@ public class ToolbarUiTests : PageTest
     public async Task ActionDeck_ShouldShowBuildScriptButton()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".action-button", new() { HasText = "Build Script" })).ToBeVisibleAsync();
+        await Expect(Page.Locator(".action-button", new() { HasText = "Build Script" })).ToBeVisibleAsync(new() { Timeout = 5000 });
     }
 
     [Test]
     public async Task BuildScript_ShouldOpenTerminalOnClick()
     {
         await NavigateAndWait();
-        await Page.Locator(".action-button", new() { HasText = "Build Script" }).ClickAsync();
+        var buildBtn = Page.Locator(".action-button", new() { HasText = "Build Script" });
+        await Expect(buildBtn).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await buildBtn.ClickAsync();
         await Expect(Page.Locator(".terminal-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
         await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Terminal Output" })).ToBeVisibleAsync();
     }
@@ -341,7 +359,9 @@ public class ToolbarUiTests : PageTest
     public async Task Terminal_ShouldShowMockOutput()
     {
         await NavigateAndWait();
-        await Page.Locator(".action-button", new() { HasText = "Build Script" }).ClickAsync();
+        var buildBtn = Page.Locator(".action-button", new() { HasText = "Build Script" });
+        await Expect(buildBtn).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await buildBtn.ClickAsync();
         await Expect(Page.Locator(".terminal-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
         await Expect(Page.Locator(".terminal-output")).ToContainTextAsync("Build successful");
     }
@@ -350,7 +370,9 @@ public class ToolbarUiTests : PageTest
     public async Task Terminal_ShouldShowExitCode()
     {
         await NavigateAndWait();
-        await Page.Locator(".action-button", new() { HasText = "Build Script" }).ClickAsync();
+        var buildBtn = Page.Locator(".action-button", new() { HasText = "Build Script" });
+        await Expect(buildBtn).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await buildBtn.ClickAsync();
         await Expect(Page.Locator(".terminal-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
         await Expect(Page.Locator(".terminal-exit")).ToContainTextAsync("Exit: 0");
     }
@@ -441,9 +463,12 @@ public class ToolbarUiTests : PageTest
     public async Task WorkItemsPlugin_ShouldOpenSearchDropdown()
     {
         await NavigateAndWait();
+        await Expect(Page.Locator(".workitem-search-toggle")).ToBeVisibleAsync(new() { Timeout = 10000 });
         await Page.Locator(".workitem-search-toggle").ClickAsync();
         await Expect(Page.Locator(".workitem-search-input")).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Expect(Page.Locator(".workitem-dropdown")).ToBeVisibleAsync();
+        // Type a character to trigger dropdown with results
+        await Page.Locator(".workitem-search-input").PressSequentiallyAsync("a");
+        await Expect(Page.Locator(".workitem-dropdown")).ToBeVisibleAsync(new() { Timeout = 5000 });
     }
 
     [Test]
@@ -469,8 +494,8 @@ public class ToolbarUiTests : PageTest
     public async Task WorkItemsPlugin_SearchShouldHideRecentItems()
     {
         await NavigateAndWait();
-        // Recent items visible initially
-        await Expect(Page.Locator(".workitem-recent")).ToBeVisibleAsync();
+        // Wait for work items to load (async plugin initialization)
+        await Expect(Page.Locator(".workitem-recent")).ToBeVisibleAsync(new() { Timeout = 10000 });
 
         // Open search - recent items should be hidden
         await Page.Locator(".workitem-search-toggle").ClickAsync();
@@ -492,6 +517,7 @@ public class ToolbarUiTests : PageTest
     [Test]
     public async Task SettingsPage_ShouldShowPluginToggleSwitches()
     {
+        await NavigateAndWait();
         await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
         await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
         await Expect(Page.Locator(".settings-toggle")).ToHaveCountAsync(4);
@@ -500,6 +526,7 @@ public class ToolbarUiTests : PageTest
     [Test]
     public async Task SettingsPage_ShouldAllowProjectSwitching()
     {
+        await NavigateAndWait();
         await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
         await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
 

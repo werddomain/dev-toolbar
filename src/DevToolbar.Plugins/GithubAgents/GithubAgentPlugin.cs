@@ -30,6 +30,7 @@ public class GithubAgentPlugin : IPlugin
     {
         _currentProjectId = context.Project.Id;
         _sessions = await _ciCdService.GetSessionsAsync(_currentProjectId);
+        OnStateChanged?.Invoke();
     }
 
     public RenderFragment? Render() => builder =>
