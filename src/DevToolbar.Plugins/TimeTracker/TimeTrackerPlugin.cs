@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
 /// <summary>
-/// Plugin for tracking time spent on projects.
+/// Plugin for tracking time spent on projects with idle detection (US5.3).
 /// </summary>
 public class TimeTrackerPlugin : IPlugin
 {
@@ -16,6 +16,7 @@ public class TimeTrackerPlugin : IPlugin
     public string Name => "Time Tracker";
     public string Icon => "⏱";
     public bool IsEnabled { get; set; } = true;
+    public event Action? OnStateChanged;
 
     private string _currentProjectId = string.Empty;
 
@@ -35,6 +36,7 @@ public class TimeTrackerPlugin : IPlugin
         var active = _timeService.GetActive();
         var isRunning = active != null && active.ProjectId == _currentProjectId;
         var todayTotal = _timeService.GetTodayTotal(_currentProjectId);
+        var isIdle = _timeService.IsIdlePaused;
 
         builder.OpenElement(0, "div");
         builder.AddAttribute(1, "class", "plugin-timetracker");
@@ -52,14 +54,23 @@ public class TimeTrackerPlugin : IPlugin
                 _timeService.Stop();
             else
                 _timeService.Start(_currentProjectId);
+            OnStateChanged?.Invoke();
         }));
         builder.AddContent(7, isRunning ? "⏹ Stop" : "▶ Start");
         builder.CloseElement(); // button
 
         // Status indicator
         builder.OpenElement(8, "span");
-        builder.AddAttribute(9, "class", isRunning ? "timer-status running" : "timer-status stopped");
-        builder.AddContent(10, isRunning ? "⏺ Recording" : "⏸ Stopped");
+        if (isIdle && isRunning)
+        {
+            builder.AddAttribute(9, "class", "timer-status idle");
+            builder.AddContent(10, "💤 Idle");
+        }
+        else
+        {
+            builder.AddAttribute(9, "class", isRunning ? "timer-status running" : "timer-status stopped");
+            builder.AddContent(10, isRunning ? "⏺ Recording" : "⏸ Stopped");
+        }
         builder.CloseElement();
 
         builder.CloseElement(); // timer-controls
@@ -81,6 +92,15 @@ public class TimeTrackerPlugin : IPlugin
         builder.CloseElement();
 
         builder.CloseElement(); // timer-display
+
+        // Idle timeout info
+        builder.OpenElement(25, "div");
+        builder.AddAttribute(26, "class", "timer-idle-info");
+        builder.OpenElement(27, "span");
+        builder.AddAttribute(28, "class", "timer-idle-label");
+        builder.AddContent(29, $"Idle timeout: {(int)_timeService.IdleTimeout.TotalMinutes} min");
+        builder.CloseElement();
+        builder.CloseElement(); // timer-idle-info
 
         // Today's total
         builder.OpenElement(16, "div");

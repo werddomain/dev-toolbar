@@ -384,4 +384,88 @@ public class ToolbarUiTests : PageTest
         await Page.Locator(".project-selector select").SelectOptionAsync("proj-frontend");
         await Expect(Page.Locator(".action-button")).ToHaveCountAsync(3, new() { Timeout = 5000 });
     }
+
+    // --- Work Items Search Tests (US5.2) ---
+
+    [Test]
+    public async Task WorkItemsPlugin_ShouldShowSearchToggle()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".workitem-search-toggle")).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task WorkItemsPlugin_ShouldOpenSearchDropdown()
+    {
+        await NavigateAndWait();
+        await Page.Locator(".workitem-search-toggle").ClickAsync();
+        await Expect(Page.Locator(".workitem-search-input")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Expect(Page.Locator(".workitem-dropdown")).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task WorkItemsPlugin_ShouldSearchAndSelectItem()
+    {
+        await NavigateAndWait();
+        await Page.Locator(".workitem-search-toggle").ClickAsync();
+        await Expect(Page.Locator(".workitem-search-input")).ToBeVisibleAsync(new() { Timeout = 5000 });
+
+        // Type search query (character by character to trigger oninput)
+        await Page.Locator(".workitem-search-input").PressSequentiallyAsync("dark");
+        await Expect(Page.Locator(".workitem-dropdown-item")).ToHaveCountAsync(1, new() { Timeout = 5000 });
+
+        // Select the item
+        await Page.Locator(".workitem-dropdown-item").First.ClickAsync();
+
+        // Verify active item changed
+        await Expect(Page.Locator(".workitem-id")).ToContainTextAsync("#1235", new() { Timeout = 5000 });
+        await Expect(Page.Locator(".workitem-title")).ToContainTextAsync("Add dark mode support");
+    }
+
+    [Test]
+    public async Task WorkItemsPlugin_SearchShouldHideRecentItems()
+    {
+        await NavigateAndWait();
+        // Recent items visible initially
+        await Expect(Page.Locator(".workitem-recent")).ToBeVisibleAsync();
+
+        // Open search - recent items should be hidden
+        await Page.Locator(".workitem-search-toggle").ClickAsync();
+        await Expect(Page.Locator(".workitem-search-input")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Expect(Page.Locator(".workitem-recent")).ToHaveCountAsync(0);
+    }
+
+    // --- Timer Idle Detection Tests (US5.3) ---
+
+    [Test]
+    public async Task TimeTrackerPlugin_ShouldShowIdleTimeout()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".timer-idle-label")).ToContainTextAsync("Idle timeout: 15 min");
+    }
+
+    // --- Settings Page Toggle Tests ---
+
+    [Test]
+    public async Task SettingsPage_ShouldShowPluginToggleSwitches()
+    {
+        await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+        await Expect(Page.Locator(".settings-toggle")).ToHaveCountAsync(4);
+    }
+
+    [Test]
+    public async Task SettingsPage_ShouldAllowProjectSwitching()
+    {
+        await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+
+        // Click on a different project
+        var frontendRow = Page.Locator(".settings-project-row", new() { HasText = "FrontEnd App" });
+        await Expect(frontendRow).ToBeVisibleAsync();
+        await frontendRow.ClickAsync();
+
+        // Verify it becomes active
+        await Expect(Page.Locator(".settings-value", new() { HasText = "FrontEnd App" })).ToBeVisibleAsync(new() { Timeout = 5000 });
+    }
 }

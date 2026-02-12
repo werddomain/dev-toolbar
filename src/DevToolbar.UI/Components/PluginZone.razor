@@ -1,4 +1,5 @@
 @using DevToolbar.Core.Interfaces
+@implements IDisposable
 
 <div class="plugin-zone">
     @if (Plugins != null)
@@ -21,4 +22,40 @@
 @code {
     [Parameter]
     public IReadOnlyList<IPlugin>? Plugins { get; set; }
+
+    private IReadOnlyList<IPlugin>? _subscribedPlugins;
+
+    protected override void OnParametersSet()
+    {
+        UnsubscribeAll();
+        if (Plugins != null)
+        {
+            foreach (var plugin in Plugins)
+            {
+                plugin.OnStateChanged += OnPluginStateChanged;
+            }
+            _subscribedPlugins = Plugins;
+        }
+    }
+
+    private void OnPluginStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UnsubscribeAll()
+    {
+        if (_subscribedPlugins != null)
+        {
+            foreach (var plugin in _subscribedPlugins)
+            {
+                plugin.OnStateChanged -= OnPluginStateChanged;
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        UnsubscribeAll();
+    }
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 /// <summary>
 /// Plugin for displaying and managing work items (TFS/GitHub Issues).
+/// Supports dropdown search/select to change active item (US5.2).
 /// </summary>
 public class WorkItemsPlugin : IPlugin
 {
@@ -16,9 +17,13 @@ public class WorkItemsPlugin : IPlugin
     public string Name => "Work Items";
     public string Icon => "📋";
     public bool IsEnabled { get; set; } = true;
+    public event Action? OnStateChanged;
 
     private WorkItem? _activeItem;
     private IReadOnlyList<WorkItem> _recentItems = Array.Empty<WorkItem>();
+    private IReadOnlyList<WorkItem> _searchResults = Array.Empty<WorkItem>();
+    private bool _showSearch;
+    private string _searchQuery = string.Empty;
 
     public WorkItemsPlugin(IWorkItemProvider provider)
     {
@@ -27,9 +32,11 @@ public class WorkItemsPlugin : IPlugin
 
     public async Task OnProjectChangedAsync(PluginContext context)
     {
-        // Load recent work items for the project
         _recentItems = await _provider.SearchAsync(context.Project.Name);
         _activeItem = _recentItems.FirstOrDefault();
+        _showSearch = false;
+        _searchQuery = string.Empty;
+        _searchResults = Array.Empty<WorkItem>();
     }
 
     public RenderFragment? Render() => builder =>
@@ -66,10 +73,98 @@ public class WorkItemsPlugin : IPlugin
             builder.CloseElement();
         }
 
+        // Toggle search button
+        builder.OpenElement(30, "button");
+        builder.AddAttribute(31, "class", "workitem-search-toggle");
+        builder.AddAttribute(32, "title", "Search work items");
+        builder.AddAttribute(33, "onclick", EventCallback.Factory.Create(this, () =>
+        {
+            _showSearch = !_showSearch;
+            if (!_showSearch)
+            {
+                _searchQuery = string.Empty;
+                _searchResults = Array.Empty<WorkItem>();
+            }
+            OnStateChanged?.Invoke();
+        }));
+        builder.AddContent(34, _showSearch ? "✕" : "🔍");
+        builder.CloseElement();
+
         builder.CloseElement(); // workitem-active
 
+        // Search dropdown (US5.2)
+        if (_showSearch)
+        {
+            builder.OpenElement(40, "div");
+            builder.AddAttribute(41, "class", "workitem-search");
+
+            builder.OpenElement(42, "input");
+            builder.AddAttribute(43, "type", "text");
+            builder.AddAttribute(44, "class", "workitem-search-input");
+            builder.AddAttribute(45, "placeholder", "Search work items...");
+            builder.AddAttribute(46, "value", _searchQuery);
+            builder.AddAttribute(47, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, async e =>
+            {
+                _searchQuery = e.Value?.ToString() ?? string.Empty;
+                if (_searchQuery.Length >= 1)
+                {
+                    _searchResults = await _provider.SearchAsync(_searchQuery);
+                }
+                else
+                {
+                    _searchResults = _recentItems;
+                }
+                OnStateChanged?.Invoke();
+            }));
+            builder.CloseElement(); // input
+
+            // Search results dropdown
+            var displayItems = _searchResults.Count > 0 ? _searchResults : _recentItems;
+            if (displayItems.Count > 0)
+            {
+                builder.OpenElement(50, "div");
+                builder.AddAttribute(51, "class", "workitem-dropdown");
+
+                foreach (var item in displayItems.Take(5))
+                {
+                    var capturedItem = item;
+                    builder.OpenElement(52, "div");
+                    builder.AddAttribute(53, "class", $"workitem-dropdown-item{(capturedItem.Id == _activeItem?.Id ? " active" : "")}");
+                    builder.AddAttribute(54, "onclick", EventCallback.Factory.Create(this, () =>
+                    {
+                        _activeItem = capturedItem;
+                        _showSearch = false;
+                        _searchQuery = string.Empty;
+                        _searchResults = Array.Empty<WorkItem>();
+                        OnStateChanged?.Invoke();
+                    }));
+
+                    builder.OpenElement(55, "span");
+                    builder.AddAttribute(56, "class", "workitem-dropdown-id");
+                    builder.AddContent(57, $"#{capturedItem.Id}");
+                    builder.CloseElement();
+
+                    builder.OpenElement(58, "span");
+                    builder.AddAttribute(59, "class", "workitem-dropdown-title");
+                    builder.AddContent(60, capturedItem.Title);
+                    builder.CloseElement();
+
+                    builder.OpenElement(61, "span");
+                    builder.AddAttribute(62, "class", $"workitem-state workitem-state-{capturedItem.State.ToLowerInvariant().Replace(" ", "-")}");
+                    builder.AddContent(63, capturedItem.State);
+                    builder.CloseElement();
+
+                    builder.CloseElement(); // workitem-dropdown-item
+                }
+
+                builder.CloseElement(); // workitem-dropdown
+            }
+
+            builder.CloseElement(); // workitem-search
+        }
+
         // Recent items list
-        if (_recentItems.Count > 0)
+        if (_recentItems.Count > 0 && !_showSearch)
         {
             builder.OpenElement(13, "div");
             builder.AddAttribute(14, "class", "workitem-recent");

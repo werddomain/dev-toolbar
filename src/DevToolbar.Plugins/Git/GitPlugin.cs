@@ -16,6 +16,7 @@ public class GitPlugin : IPlugin
     public string Name => "Git Tools";
     public string Icon => "git";
     public bool IsEnabled { get; set; } = true;
+    public event Action? OnStateChanged;
 
     private string _currentBranch = "main";
     private bool _isDirty = false;
@@ -67,6 +68,7 @@ public class GitPlugin : IPlugin
             try
             {
                 _syncStatus = "Pulling...";
+                OnStateChanged?.Invoke();
                 await _processService.StartProcessAsync("git", "pull");
                 _syncStatus = "✓ Pull complete";
             }
@@ -74,6 +76,7 @@ public class GitPlugin : IPlugin
             {
                 _syncStatus = $"✗ Pull failed: {ex.Message}";
             }
+            OnStateChanged?.Invoke();
         }));
         builder.AddContent(16, "⬇ Pull");
         builder.CloseElement();
@@ -86,6 +89,7 @@ public class GitPlugin : IPlugin
             try
             {
                 _syncStatus = "Pushing...";
+                OnStateChanged?.Invoke();
                 await _processService.StartProcessAsync("git", "push");
                 _syncStatus = "✓ Push complete";
             }
@@ -93,6 +97,7 @@ public class GitPlugin : IPlugin
             {
                 _syncStatus = $"✗ Push failed: {ex.Message}";
             }
+            OnStateChanged?.Invoke();
         }));
         builder.AddContent(21, "⬆ Push");
         builder.CloseElement();

@@ -51,11 +51,15 @@
                 <div class="settings-plugins-list">
                     @foreach (var plugin in _allPlugins)
                     {
-                        var isEnabled = _activeProject.EnabledPlugins.Contains(plugin.UniqueId);
+                        var pluginId = plugin.UniqueId;
+                        var isEnabled = _activeProject.EnabledPlugins.Contains(pluginId);
                         <div class="settings-plugin-row">
-                            <span class="settings-plugin-status @(isEnabled ? "enabled" : "disabled")">
-                                @(isEnabled ? "✓" : "✗")
-                            </span>
+                            <label class="settings-toggle">
+                                <input type="checkbox" checked="@isEnabled"
+                                       class="settings-plugin-checkbox"
+                                       @onchange="@(e => TogglePlugin(pluginId, (bool)(e.Value ?? false)))" />
+                                <span class="settings-toggle-slider"></span>
+                            </label>
                             <span class="settings-plugin-name">@plugin.Name</span>
                             <span class="settings-plugin-id">@plugin.UniqueId</span>
                         </div>
@@ -86,7 +90,9 @@
                     @foreach (var project in _projects)
                     {
                         var isActive = project.Id == _activeProject?.Id;
-                        <div class="settings-project-row @(isActive ? "active" : "")">
+                        <div class="settings-project-row @(isActive ? "active" : "")"
+                             @onclick="@(() => SwitchProject(project.Id))"
+                             style="cursor: pointer;">
                             <span class="settings-project-indicator" style="background-color: @project.Theme.AccentColor"></span>
                             <span class="settings-project-name">@project.Name</span>
                             <span class="settings-project-type">@project.ProjectType</span>
@@ -112,5 +118,27 @@
         _activeProject = SettingsService.GetActiveProject();
         _projects = await SettingsService.GetProjectsAsync();
         _allPlugins = PluginLoader.GetPlugins();
+    }
+
+    private void TogglePlugin(string pluginId, bool enabled)
+    {
+        if (_activeProject == null) return;
+
+        if (enabled && !_activeProject.EnabledPlugins.Contains(pluginId))
+        {
+            _activeProject.EnabledPlugins.Add(pluginId);
+        }
+        else if (!enabled)
+        {
+            _activeProject.EnabledPlugins.Remove(pluginId);
+        }
+    }
+
+    private async Task SwitchProject(string projectId)
+    {
+        if (_activeProject?.Id == projectId) return;
+
+        await SettingsService.SetActiveProjectAsync(projectId);
+        _activeProject = SettingsService.GetActiveProject();
     }
 }

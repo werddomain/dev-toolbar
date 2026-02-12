@@ -1066,3 +1066,168 @@ body {
     font-size: 0.7em;
     font-weight: 700;
 }
+
+/* Work Items Search (US5.2) */
+.workitem-search-toggle {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8em;
+    margin-left: auto;
+    transition: all 0.2s ease;
+}
+
+.workitem-search-toggle:hover {
+    background-color: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.workitem-search {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.workitem-search-input {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 0.85em;
+    font-family: var(--font-family);
+    outline: none;
+}
+
+.workitem-search-input:focus {
+    border-color: var(--accent-color);
+}
+
+.workitem-search-input::placeholder {
+    color: var(--text-secondary);
+}
+
+.workitem-dropdown {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.workitem-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: background-color 0.2s ease;
+}
+
+.workitem-dropdown-item:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.workitem-dropdown-item.active {
+    background-color: rgba(0, 120, 215, 0.2);
+    border-left: 3px solid var(--accent-color);
+}
+
+.workitem-dropdown-id {
+    font-weight: 700;
+    color: var(--accent-color);
+    font-size: 0.9em;
+    min-width: 45px;
+}
+
+.workitem-dropdown-title {
+    flex: 1;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Timer Idle Status (US5.3) */
+.timer-status.idle {
+    background-color: #e8a838;
+    color: #1e1e1e;
+}
+
+.timer-idle-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.timer-idle-label {
+    font-size: 0.75em;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Settings Toggle Switch */
+.settings-toggle {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.settings-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.settings-toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    transition: 0.3s;
+}
+
+.settings-toggle-slider::before {
+    content: "";
+    position: absolute;
+    height: 14px;
+    width: 14px;
+    left: 2px;
+    bottom: 2px;
+    background-color: var(--text-secondary);
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.settings-toggle input:checked + .settings-toggle-slider {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.settings-toggle input:checked + .settings-toggle-slider::before {
+    transform: translateX(16px);
+    background-color: white;
+}
+
+.settings-plugin-checkbox {
+    display: none;
+}
+
+.settings-project-row[style*="cursor: pointer"]:hover {
+    background-color: var(--bg-secondary);
+}

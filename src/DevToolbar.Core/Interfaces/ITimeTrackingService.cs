@@ -24,4 +24,13 @@ public interface ITimeTrackingService
 
     /// <summary>Event fired when tracking state changes.</summary>
     event Action? OnTrackingChanged;
+
+    /// <summary>Get the idle timeout duration after which tracking pauses automatically (US5.3).</summary>
+    TimeSpan IdleTimeout { get; }
+
+    /// <summary>Report user activity (resets the idle timer).</summary>
+    void ReportActivity();
+
+    /// <summary>Whether the tracker is currently paused due to inactivity.</summary>
+    bool IsIdlePaused { get; }
 }

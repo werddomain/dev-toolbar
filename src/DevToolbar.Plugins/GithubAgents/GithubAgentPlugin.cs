@@ -16,6 +16,7 @@ public class GithubAgentPlugin : IPlugin
     public string Name => "CI/CD Status";
     public string Icon => "🔄";
     public bool IsEnabled { get; set; } = true;
+    public event Action? OnStateChanged;
 
     private string _currentProjectId = string.Empty;
     private IReadOnlyList<CiCdSession> _sessions = Array.Empty<CiCdSession>();
@@ -66,6 +67,7 @@ public class GithubAgentPlugin : IPlugin
             builder.AddAttribute(16, "onclick", EventCallback.Factory.Create(this, () =>
             {
                 _ciCdService.MarkAllAsRead(_currentProjectId);
+                OnStateChanged?.Invoke();
             }));
             builder.AddContent(17, "✓ Read all");
             builder.CloseElement();
@@ -103,6 +105,7 @@ public class GithubAgentPlugin : IPlugin
                 if (!session.IsRead)
                 {
                     _ciCdService.MarkAsRead(session.Id);
+                    OnStateChanged?.Invoke();
                 }
             }));
 

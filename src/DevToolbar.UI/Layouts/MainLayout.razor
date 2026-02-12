@@ -47,14 +47,26 @@
 
     protected override void OnInitialized()
     {
+        SettingsService.OnActiveProjectChanged += OnProjectChanged;
+
         var project = SettingsService.GetActiveProject();
         if (project != null)
         {
             ApplyProject(project);
         }
+    }
 
-        SettingsService.OnActiveProjectChanged += OnProjectChanged;
-        ThemeService.OnThemeChanged += StateHasChanged;
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            ThemeService.OnThemeChanged += OnThemeChanged;
+        }
+    }
+
+    private void OnThemeChanged()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     private void ApplyProject(ProjectConfig project)
@@ -137,6 +149,6 @@
     public void Dispose()
     {
         SettingsService.OnActiveProjectChanged -= OnProjectChanged;
-        ThemeService.OnThemeChanged -= StateHasChanged;
+        ThemeService.OnThemeChanged -= OnThemeChanged;
     }
 }

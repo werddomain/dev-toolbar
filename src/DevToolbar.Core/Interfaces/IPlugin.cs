@@ -25,4 +25,7 @@ public interface IPlugin
 
     /// <summary>Returns a RenderFragment to display in the plugin zone.</summary>
     RenderFragment? Render();
+
+    /// <summary>Event fired when the plugin's internal state changes and needs re-rendering.</summary>
+    event Action? OnStateChanged;
 }
