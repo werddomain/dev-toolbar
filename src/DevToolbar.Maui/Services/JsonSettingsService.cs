@@ -89,8 +89,8 @@ public class JsonSettingsService : ISettingsService
         if (index >= 0)
         {
             _projects[index] = project;
+            await PersistConfigAsync();
         }
-        await PersistConfigAsync();
     }
 
     private async Task PersistConfigAsync()

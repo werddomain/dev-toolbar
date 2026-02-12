@@ -160,10 +160,10 @@
         await LoadEntries();
     }
 
-    private async Task OnGroupByChanged(ChangeEventArgs e)
+    private void OnGroupByChanged(ChangeEventArgs e)
     {
         _groupBy = e.Value?.ToString() ?? "none";
-        await LoadEntries();
+        // Grouping is a view-only operation - no need to reload data
     }
 
     private async Task Close()
