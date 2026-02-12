@@ -20,6 +20,7 @@
             </select>
             <select class="time-report-filter" @onchange="OnGroupByChanged">
                 <option value="none" selected="@(_groupBy == "none")">No Grouping</option>
+                <option value="project" selected="@(_groupBy == "project")">By Project</option>
                 <option value="workitem" selected="@(_groupBy == "workitem")">By Work Item</option>
                 <option value="day" selected="@(_groupBy == "day")">By Day</option>
             </select>
@@ -34,7 +35,35 @@
                     <span class="time-report-total-value">@FormatDuration(_totalDuration)</span>
                 </div>
 
-                @if (_groupBy == "workitem")
+                @if (_groupBy == "project")
+                {
+                    var grouped = _allEntries!
+                        .Where(e => e.StartTime >= GetCutoff())
+                        .GroupBy(e => e.ProjectId)
+                        .Select(g => new { Key = g.Key, Total = g.Aggregate(TimeSpan.Zero, (sum, e) => sum + e.Duration), Entries = g.ToList() })
+                        .OrderByDescending(g => g.Total);
+
+                    <div class="time-report-grouped">
+                        @foreach (var group in grouped)
+                        {
+                            var projectName = _projectNames.GetValueOrDefault(group.Key, group.Key);
+                            <div class="time-report-group">
+                                <div class="time-report-group-header">
+                                    <span class="time-report-group-key">📁 @projectName</span>
+                                    <span class="time-report-group-total">@FormatDuration(group.Total)</span>
+                                </div>
+                                @foreach (var entry in group.Entries)
+                                {
+                                    <div class="time-report-group-entry">
+                                        <span>@entry.StartTime.ToString("HH:mm") — @(entry.WorkItemId != null ? $"#{entry.WorkItemId}" : "—")</span>
+                                        <span class="time-report-duration">@FormatDuration(entry.Duration)</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                else if (_groupBy == "workitem")
                 {
                     var grouped = _entries.GroupBy(e => e.WorkItemId ?? "(no work item)")
                         .Select(g => new { Key = g.Key, Total = g.Aggregate(TimeSpan.Zero, (sum, e) => sum + e.Duration), Entries = g.ToList() })
@@ -126,6 +155,8 @@
     private string _period = "day";
     private string _groupBy = "none";
     private IReadOnlyList<TimeEntry>? _entries;
+    private List<TimeEntry>? _allEntries;
+    private Dictionary<string, string> _projectNames = new();
     private TimeSpan _totalDuration;
 
     protected override async Task OnParametersSetAsync()
@@ -143,16 +174,29 @@
         if (project == null) return;
 
         var allEntries = await TimeTrackingService.GetEntriesAsync(project.Id);
-        var cutoff = _period switch
-        {
-            "week" => DateTime.Now.AddDays(-7),
-            "month" => DateTime.Now.AddDays(-30),
-            _ => DateTime.Today
-        };
+        var cutoff = GetCutoff();
 
         _entries = allEntries.Where(e => e.StartTime >= cutoff).OrderByDescending(e => e.StartTime).ToList();
         _totalDuration = _entries.Aggregate(TimeSpan.Zero, (sum, e) => sum + e.Duration);
+
+        // Load all projects' entries for "by project" grouping (US5.4)
+        var projects = await SettingsService.GetProjectsAsync();
+        _projectNames = projects.ToDictionary(p => p.Id, p => p.Name);
+        var allProjectEntries = new List<TimeEntry>();
+        foreach (var p in projects)
+        {
+            var entries = await TimeTrackingService.GetEntriesAsync(p.Id);
+            allProjectEntries.AddRange(entries);
+        }
+        _allEntries = allProjectEntries;
     }
+
+    private DateTime GetCutoff() => _period switch
+    {
+        "week" => DateTime.Now.AddDays(-7),
+        "month" => DateTime.Now.AddDays(-30),
+        _ => DateTime.Today
+    };
 
     private async Task OnPeriodChanged(ChangeEventArgs e)
     {

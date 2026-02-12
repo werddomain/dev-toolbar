@@ -53,7 +53,16 @@
         StateHasChanged();
 
         var result = await scriptService.ExecuteAsync(interpreter, scriptPath, arguments);
-        _output += result.Output;
+
+        // Simulate streaming output line by line (US4.3: "logs en temps réel")
+        var lines = result.Output.Split('\n');
+        foreach (var line in lines)
+        {
+            _output += line + "\n";
+            StateHasChanged();
+            await Task.Delay(80); // simulate streaming delay
+        }
+
         if (!string.IsNullOrEmpty(result.Error))
         {
             _output += $"\n[STDERR]\n{result.Error}";

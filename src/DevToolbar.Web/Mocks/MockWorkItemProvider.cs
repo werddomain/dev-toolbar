@@ -12,11 +12,11 @@ public class MockWorkItemProvider : IWorkItemProvider
 
     private readonly List<WorkItem> _items = new()
     {
-        new WorkItem { Id = "1234", Title = "Fix login page redirect", State = "Active", Type = "Bug", AssignedTo = "dev@example.com", Url = "#" },
-        new WorkItem { Id = "1235", Title = "Add dark mode support", State = "In Progress", Type = "User Story", AssignedTo = "dev@example.com", Url = "#" },
-        new WorkItem { Id = "1236", Title = "Update API documentation", State = "New", Type = "Task", AssignedTo = "dev@example.com", Url = "#" },
-        new WorkItem { Id = "1237", Title = "Refactor authentication module", State = "New", Type = "Task", AssignedTo = "admin@example.com", Url = "#" },
-        new WorkItem { Id = "1238", Title = "Fix dashboard performance", State = "Active", Type = "Bug", AssignedTo = "dev@example.com", Url = "#" }
+        new WorkItem { Id = "1234", Title = "Fix login page redirect", State = "Active", Type = "Bug", AssignedTo = "dev@example.com", Url = "https://github.com/example/my-webapi/issues/1234" },
+        new WorkItem { Id = "1235", Title = "Add dark mode support", State = "In Progress", Type = "User Story", AssignedTo = "dev@example.com", Url = "https://github.com/example/my-webapi/issues/1235" },
+        new WorkItem { Id = "1236", Title = "Update API documentation", State = "New", Type = "Task", AssignedTo = "dev@example.com", Url = "https://github.com/example/my-webapi/issues/1236" },
+        new WorkItem { Id = "1237", Title = "Refactor authentication module", State = "New", Type = "Task", AssignedTo = "admin@example.com", Url = "https://github.com/example/my-webapi/issues/1237" },
+        new WorkItem { Id = "1238", Title = "Fix dashboard performance", State = "Active", Type = "Bug", AssignedTo = "dev@example.com", Url = "https://github.com/example/my-webapi/issues/1238" }
     };
 
     public Task<IReadOnlyList<WorkItem>> SearchAsync(string query)

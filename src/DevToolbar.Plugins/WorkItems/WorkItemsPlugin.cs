@@ -64,19 +64,24 @@ public class WorkItemsPlugin : IPlugin
 
         if (_activeItem != null)
         {
-            builder.OpenElement(4, "span");
-            builder.AddAttribute(5, "class", "workitem-id");
-            builder.AddContent(6, $"#{_activeItem.Id}");
-            builder.CloseElement();
-
-            builder.OpenElement(7, "span");
-            builder.AddAttribute(8, "class", "workitem-title");
-            builder.AddContent(9, _activeItem.Title);
+            // Clickable link to web (US5.2: "Lien clicable vers le web")
+            var webUrl = _provider.GetWebUrl(_activeItem);
+            builder.OpenElement(4, "a");
+            builder.AddAttribute(5, "href", webUrl);
+            builder.AddAttribute(6, "target", "_blank");
+            builder.AddAttribute(7, "class", "workitem-id workitem-link");
+            builder.AddAttribute(8, "title", $"Open #{_activeItem.Id} in browser");
+            builder.AddContent(9, $"#{_activeItem.Id}");
             builder.CloseElement();
 
             builder.OpenElement(10, "span");
-            builder.AddAttribute(11, "class", $"workitem-state workitem-state-{_activeItem.State.ToLowerInvariant().Replace(" ", "-")}");
-            builder.AddContent(12, _activeItem.State);
+            builder.AddAttribute(11, "class", "workitem-title");
+            builder.AddContent(12, _activeItem.Title);
+            builder.CloseElement();
+
+            builder.OpenElement(13, "span");
+            builder.AddAttribute(14, "class", $"workitem-state workitem-state-{_activeItem.State.ToLowerInvariant().Replace(" ", "-")}");
+            builder.AddContent(15, _activeItem.State);
             builder.CloseElement();
         }
         else
@@ -162,9 +167,12 @@ public class WorkItemsPlugin : IPlugin
                         OnStateChanged?.Invoke();
                     }));
 
-                    builder.OpenElement(55, "span");
-                    builder.AddAttribute(56, "class", "workitem-dropdown-id");
-                    builder.AddContent(57, $"#{capturedItem.Id}");
+                    builder.OpenElement(55, "a");
+                    builder.AddAttribute(56, "href", _provider.GetWebUrl(capturedItem));
+                    builder.AddAttribute(57, "target", "_blank");
+                    builder.AddAttribute(58, "class", "workitem-dropdown-id workitem-link");
+                    builder.AddAttribute(59, "onclick", EventCallback.Factory.Create(this, (Microsoft.AspNetCore.Components.Web.MouseEventArgs e) => { /* allow link navigation */ }));
+                    builder.AddContent(60, $"#{capturedItem.Id}");
                     builder.CloseElement();
 
                     builder.OpenElement(58, "span");

@@ -17,6 +17,22 @@ public class MockTimeTrackingService : ITimeTrackingService
     public TimeSpan IdleTimeout => TimeSpan.FromMinutes(15);
     public bool IsIdlePaused { get; private set; }
 
+    public MockTimeTrackingService()
+    {
+        // Pre-populate with sample time entries for Time Report demo (US5.4)
+        var today = DateTime.Today;
+        _entries.AddRange(new[]
+        {
+            new TimeEntry { ProjectId = "proj-webapi", WorkItemId = "1234", StartTime = today.AddHours(9), EndTime = today.AddHours(10).AddMinutes(30), Description = "Fix login redirect" },
+            new TimeEntry { ProjectId = "proj-webapi", WorkItemId = "1235", StartTime = today.AddHours(10).AddMinutes(45), EndTime = today.AddHours(12), Description = "Dark mode research" },
+            new TimeEntry { ProjectId = "proj-webapi", StartTime = today.AddHours(13), EndTime = today.AddHours(14).AddMinutes(15), Description = "Code review" },
+            new TimeEntry { ProjectId = "proj-frontend", WorkItemId = "1236", StartTime = today.AddHours(14).AddMinutes(30), EndTime = today.AddHours(16), Description = "Update docs" },
+            new TimeEntry { ProjectId = "proj-webapi", WorkItemId = "1234", StartTime = today.AddDays(-1).AddHours(9), EndTime = today.AddDays(-1).AddHours(11), Description = "Login page testing" },
+            new TimeEntry { ProjectId = "proj-frontend", WorkItemId = "1235", StartTime = today.AddDays(-1).AddHours(13), EndTime = today.AddDays(-1).AddHours(15).AddMinutes(30), Description = "UI components" },
+            new TimeEntry { ProjectId = "proj-devops", StartTime = today.AddDays(-2).AddHours(10), EndTime = today.AddDays(-2).AddHours(12), Description = "Pipeline config" },
+        });
+    }
+
     public void ReportActivity()
     {
         _lastActivity = DateTime.Now;
