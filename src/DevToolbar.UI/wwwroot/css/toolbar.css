@@ -1239,3 +1239,33 @@ body {
 .settings-project-row[style*="cursor: pointer"]:hover {
     background-color: var(--bg-secondary);
 }
+
+/* Status Bar Footer */
+.toolbar-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 16px;
+    background-color: var(--accent-color);
+    color: white;
+    font-size: 0.75em;
+    flex-shrink: 0;
+}
+
+.footer-project {
+    font-weight: 700;
+}
+
+.footer-separator {
+    opacity: 0.5;
+}
+
+.footer-plugin-count {
+    opacity: 0.9;
+}
+
+.footer-shortcuts {
+    margin-left: auto;
+    opacity: 0.7;
+    font-style: italic;
+}

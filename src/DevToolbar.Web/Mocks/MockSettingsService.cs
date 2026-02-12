@@ -44,7 +44,8 @@ public class MockSettingsService : ISettingsService
                 Actions = new List<ActionConfig>
                 {
                     new ActionConfig { Label = "VS Code", Icon = "🔵", ProcessPath = "code.exe" },
-                    new ActionConfig { Label = "Browser", Icon = "🌐", ProcessPath = "chrome.exe" }
+                    new ActionConfig { Label = "Browser", Icon = "🌐", ProcessPath = "chrome.exe", WindowTitleRegex = ".*localhost.*" },
+                    new ActionConfig { Label = "npm start", Icon = "📦", ProcessPath = "start.sh", ActionType = ActionType.Script, Interpreter = "bash" }
                 }
             },
             new ProjectConfig

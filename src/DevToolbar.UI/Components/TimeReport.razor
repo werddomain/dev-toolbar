@@ -1,7 +1,9 @@
 @using DevToolbar.Core.Interfaces
 @using DevToolbar.Core.Models
+@using Microsoft.JSInterop
 @inject ITimeTrackingService TimeTrackingService
 @inject ISettingsService SettingsService
+@inject IJSRuntime JSRuntime
 
 <div class="time-report-overlay @(_isVisible ? "visible" : "")" @onclick="Close">
     <div class="time-report-modal" @onclick:stopPropagation="true">
@@ -105,11 +107,21 @@
         await OnClose.InvokeAsync();
     }
 
-    private Task ExportCsv()
+    private async Task ExportCsv()
     {
-        // In a real implementation, this would download a CSV file
-        Console.WriteLine("CSV Export triggered");
-        return Task.CompletedTask;
+        if (_entries == null || _entries.Count == 0) return;
+
+        var csv = new System.Text.StringBuilder();
+        csv.AppendLine("Date,Start Time,Duration,Work Item");
+        foreach (var entry in _entries)
+        {
+            var duration = FormatDuration(entry.Duration);
+            var workItem = entry.WorkItemId ?? "";
+            csv.AppendLine($"{entry.StartTime:yyyy-MM-dd},{entry.StartTime:HH:mm},{duration},{workItem}");
+        }
+
+        var filename = $"time-report-{_period}-{DateTime.Now:yyyyMMdd}.csv";
+        await JSRuntime.InvokeVoidAsync("DevToolbar.downloadCsv", filename, csv.ToString());
     }
 
     private static string FormatDuration(TimeSpan duration) =>

@@ -385,6 +385,49 @@ public class ToolbarUiTests : PageTest
         await Expect(Page.Locator(".action-button")).ToHaveCountAsync(3, new() { Timeout = 5000 });
     }
 
+    // --- Status Bar Footer Tests ---
+
+    [Test]
+    public async Task Footer_ShouldDisplayProjectName()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".toolbar-footer")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".footer-project")).ToContainTextAsync("MyWebAPI");
+    }
+
+    [Test]
+    public async Task Footer_ShouldShowPluginCount()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".footer-plugin-count")).ToContainTextAsync("4 plugins");
+    }
+
+    [Test]
+    public async Task Footer_ShouldUpdateOnProjectSwitch()
+    {
+        await NavigateAndWait();
+        await Expect(Page.Locator(".footer-project")).ToContainTextAsync("MyWebAPI");
+
+        // Switch to DevOps Pipeline (2 plugins)
+        await Page.Locator(".project-selector select").SelectOptionAsync("proj-devops");
+        await Expect(Page.Locator(".footer-project")).ToContainTextAsync("DevOps Pipeline", new() { Timeout = 5000 });
+        await Expect(Page.Locator(".footer-plugin-count")).ToContainTextAsync("2 plugins", new() { Timeout = 5000 });
+    }
+
+    // --- CSV Export Tests ---
+
+    [Test]
+    public async Task TimeReport_ExportButton_ShouldBeClickable()
+    {
+        await NavigateAndWait();
+        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
+
+        var exportBtn = Page.Locator(".time-report-export");
+        await Expect(exportBtn).ToBeVisibleAsync();
+        await Expect(exportBtn).ToBeEnabledAsync();
+    }
+
     // --- Work Items Search Tests (US5.2) ---
 
     [Test]

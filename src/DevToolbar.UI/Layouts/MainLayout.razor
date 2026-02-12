@@ -18,8 +18,8 @@
         </div>
         <div class="toolbar-header-controls">
             <ProjectSelector />
-            <button class="toolbar-report-btn" @onclick="ToggleTimeReport" title="Time Report">📊</button>
-            <a href="/settings" class="toolbar-settings-btn" title="Settings">⚙️</a>
+            <button class="toolbar-report-btn" @onclick="ToggleTimeReport" title="Time Report (Ctrl+R)">📊</button>
+            <a href="/settings" class="toolbar-settings-btn" title="Settings (Ctrl+,)">⚙️</a>
         </div>
     </header>
 
@@ -33,6 +33,14 @@
         </section>
     </main>
 
+    <footer class="toolbar-footer">
+        <span class="footer-project">@_activeProjectName</span>
+        <span class="footer-separator">|</span>
+        <span class="footer-plugin-count">@_pluginCount plugins</span>
+        <span class="footer-separator">|</span>
+        <span class="footer-shortcuts">Esc to close modals</span>
+    </footer>
+
     <TimeReport IsVisible="@_showTimeReport" OnClose="CloseTimeReport" />
     <TerminalOutput @ref="_terminalOutput" IsVisible="@_showTerminal" OnClose="CloseTerminal" />
     <ToastContainer />
@@ -44,6 +52,8 @@
     private bool _showTimeReport;
     private bool _showTerminal;
     private TerminalOutput? _terminalOutput;
+    private string _activeProjectName = "";
+    private int _pluginCount;
 
     protected override void OnInitialized()
     {
@@ -72,6 +82,7 @@
     private void ApplyProject(ProjectConfig project)
     {
         _actions = project.Actions;
+        _activeProjectName = project.Name;
         ThemeService.SetTheme(project.Theme);
 
         var allPlugins = PluginLoader.GetPlugins();
@@ -79,6 +90,8 @@
             .Where(p => project.EnabledPlugins.Contains(p.UniqueId))
             .ToList()
             .AsReadOnly();
+
+        _pluginCount = _visiblePlugins.Count;
 
         var context = new PluginContext { Project = project };
         foreach (var plugin in allPlugins)
