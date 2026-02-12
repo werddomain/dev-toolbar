@@ -9,11 +9,12 @@ window.DevToolbar = {
     downloadCsv: function (filename, csvContent) {
         var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         var link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
+        var url = URL.createObjectURL(blob);
+        link.href = url;
         link.download = filename;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
     }
 };
