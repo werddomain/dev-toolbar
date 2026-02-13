@@ -31,7 +31,7 @@
         }
         @if (gitPlugin?.IsEnabled == true && gitPlugin.Render() is { } gitFragment)
         {
-            <div class="plugin-panel" data-plugin-id="@gitPlugin.UniqueId">
+            <div class="plugin-panel" data-plugin-id="@gitPlugin.UniqueId" aria-label="@gitPlugin.Name">
                 <h4 class="plugin-title">@gitPlugin.Name</h4>
                 <div class="plugin-content">@gitFragment</div>
             </div>
@@ -41,7 +41,7 @@
     @* ── Center: Plugin zone + Actions (z-index: 1) ── *@
     <main class="toolbar-main">
         <section class="toolbar-plugins">
-            <PluginZone Plugins="@_nonGitPlugins" />
+            <PluginZone Plugins="@_pluginZonePlugins" />
         </section>
 
         <section class="toolbar-actions">
@@ -73,7 +73,7 @@
 @code {
     private List<ActionConfig> _actions = new();
     private IReadOnlyList<IPlugin>? _visiblePlugins;
-    private IReadOnlyList<IPlugin>? _nonGitPlugins;
+    private IReadOnlyList<IPlugin>? _pluginZonePlugins;
     private bool _showTimeReport;
     private bool _showTerminal;
     private TerminalOutput? _terminalOutput;
@@ -116,7 +116,7 @@
             .ToList()
             .AsReadOnly();
 
-        _nonGitPlugins = _visiblePlugins
+        _pluginZonePlugins = _visiblePlugins
             .Where(p => p.UniqueId != "git-tools")
             .ToList()
             .AsReadOnly();
