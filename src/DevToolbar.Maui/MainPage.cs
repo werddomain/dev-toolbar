@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Components.WebView.Maui;
+
 namespace DevToolbar.Maui;
 
 /// <summary>
