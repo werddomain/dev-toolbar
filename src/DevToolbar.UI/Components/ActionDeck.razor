@@ -1,0 +1,35 @@
+@using DevToolbar.Core.Interfaces
+@using DevToolbar.Core.Models
+
+<div class="action-deck">
+    @if (Actions != null)
+    {
+        @foreach (var action in Actions)
+        {
+            @if (action.ActionType == ActionType.Process && !string.IsNullOrEmpty(action.WindowTitleRegex))
+            {
+                <SmartProcessButton Action="@action" />
+            }
+            else
+            {
+                <button class="action-button" @onclick="() => OnActionClick(action)" title="@action.Label">
+                    <span class="action-icon">@action.Icon</span>
+                    <span class="action-label">@action.Label</span>
+                </button>
+            }
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<ActionConfig>? Actions { get; set; }
+
+    [Parameter]
+    public EventCallback<ActionConfig> OnActionClicked { get; set; }
+
+    private async Task OnActionClick(ActionConfig action)
+    {
+        await OnActionClicked.InvokeAsync(action);
+    }
+}

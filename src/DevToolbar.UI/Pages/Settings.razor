@@ -1,0 +1,215 @@
+@page "/settings"
+@using DevToolbar.Core.Interfaces
+@using DevToolbar.Core.Models
+@using DevToolbar.UI.Services
+@inject ISettingsService SettingsService
+@inject IPluginLoader PluginLoader
+
+<PageTitle>DevToolbar - Settings</PageTitle>
+
+<div class="settings-page">
+    <header class="settings-header">
+        <h2>⚙️ Settings</h2>
+        <a href="/" class="settings-back">← Back to Toolbar</a>
+    </header>
+
+    <div class="settings-content">
+        @if (_activeProject != null)
+        {
+            <section class="settings-section">
+                <h3>Active Project</h3>
+                <div class="settings-field">
+                    <label>Name</label>
+                    <span class="settings-value">@_activeProject.Name</span>
+                </div>
+                <div class="settings-field">
+                    <label>Type</label>
+                    <span class="settings-value">@_activeProject.ProjectType</span>
+                </div>
+                <div class="settings-field">
+                    <label>Path</label>
+                    <span class="settings-value settings-path">@_activeProject.Path</span>
+                </div>
+                <div class="settings-field">
+                    <label>Default Branch</label>
+                    <span class="settings-value">@_activeProject.DefaultBranch</span>
+                </div>
+                @if (!string.IsNullOrEmpty(_activeProject.RepositoryUrl))
+                {
+                    <div class="settings-field">
+                        <label>Repository</label>
+                        <a href="@_activeProject.RepositoryUrl" target="_blank" class="settings-value settings-link">@_activeProject.RepositoryUrl</a>
+                    </div>
+                }
+            </section>
+
+            <section class="settings-section">
+                <h3>Theme</h3>
+                <div class="settings-field">
+                    <label>Accent Color</label>
+                    <div class="settings-color-preview">
+                        <input type="color" value="@_activeProject.Theme.AccentColor"
+                               class="settings-color-picker"
+                               @onchange="@(e => UpdateAccentColor(e.Value?.ToString() ?? "#0d6efd"))" />
+                        <span class="settings-value">@_activeProject.Theme.AccentColor</span>
+                    </div>
+                </div>
+                <div class="settings-field">
+                    <label>Font Family</label>
+                    <select class="settings-font-select" value="@_activeProject.Theme.FontFamily"
+                            @onchange="@(e => UpdateFontFamily(e.Value?.ToString() ?? "Segoe UI"))">
+                        <option value="Segoe UI">Segoe UI</option>
+                        <option value="Cascadia Code">Cascadia Code</option>
+                        <option value="Consolas">Consolas</option>
+                        <option value="JetBrains Mono">JetBrains Mono</option>
+                        <option value="Fira Code">Fira Code</option>
+                        <option value="Inter">Inter</option>
+                    </select>
+                </div>
+            </section>
+
+            <section class="settings-section">
+                <h3>Enabled Plugins</h3>
+                <div class="settings-plugins-list">
+                    @foreach (var plugin in _allPlugins)
+                    {
+                        var pluginId = plugin.UniqueId;
+                        var isEnabled = _activeProject.EnabledPlugins.Contains(pluginId);
+                        <div class="settings-plugin-row">
+                            <label class="settings-toggle">
+                                <input type="checkbox" checked="@isEnabled"
+                                       class="settings-plugin-checkbox"
+                                       @onchange="@(e => TogglePlugin(pluginId, (bool)(e.Value ?? false)))" />
+                                <span class="settings-toggle-slider"></span>
+                            </label>
+                            <span class="settings-plugin-name">@plugin.Name</span>
+                            <span class="settings-plugin-id">@plugin.UniqueId</span>
+                        </div>
+                    }
+                </div>
+            </section>
+
+            <section class="settings-section">
+                <h3>Quick Actions (@_activeProject.Actions.Count)</h3>
+                <div class="settings-actions-list">
+                    @foreach (var action in _activeProject.Actions)
+                    {
+                        <div class="settings-action-row">
+                            <span class="settings-action-icon">@action.Icon</span>
+                            <span class="settings-action-label">@action.Label</span>
+                            <span class="settings-action-path">@action.ProcessPath</span>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+
+        <section class="settings-section">
+            <h3>All Projects</h3>
+            <div class="settings-projects-list">
+                @if (_projects != null)
+                {
+                    @foreach (var project in _projects)
+                    {
+                        var isActive = project.Id == _activeProject?.Id;
+                        <div class="settings-project-row @(isActive ? "active" : "")"
+                             @onclick="@(() => SwitchProject(project.Id))"
+                             style="cursor: pointer;">
+                            <span class="settings-project-indicator" style="background-color: @project.Theme.AccentColor"></span>
+                            <span class="settings-project-name">@project.Name</span>
+                            <span class="settings-project-type">@project.ProjectType</span>
+                            @if (isActive)
+                            {
+                                <span class="settings-project-badge">Active</span>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+        </section>
+
+        <section class="settings-section">
+            <h3>Configuration Hierarchy</h3>
+            <p class="settings-description">Settings are resolved in order of priority (highest first):</p>
+            <div class="settings-config-hierarchy">
+                <div class="config-level">
+                    <span class="config-level-badge config-level-1">1</span>
+                    <span class="config-level-name">.devtoolbar.json</span>
+                    <span class="config-level-desc">Local project override (in project directory)</span>
+                    @if (_activeProject != null)
+                    {
+                        <span class="config-level-path">@(_activeProject.Path)/.devtoolbar.json</span>
+                    }
+                </div>
+                <div class="config-level">
+                    <span class="config-level-badge config-level-2">2</span>
+                    <span class="config-level-name">Template Config</span>
+                    <span class="config-level-desc">Project type template (e.g., WebApi, SPA)</span>
+                    @if (_activeProject != null)
+                    {
+                        <span class="config-level-path">template-@(_activeProject.ProjectType?.ToLowerInvariant() ?? "unknown").json</span>
+                    }
+                </div>
+                <div class="config-level">
+                    <span class="config-level-badge config-level-3">3</span>
+                    <span class="config-level-name">Global Config</span>
+                    <span class="config-level-desc">User-wide default settings</span>
+                    <span class="config-level-path">%APPDATA%/DevToolbar/global.json</span>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+@code {
+    private ProjectConfig? _activeProject;
+    private IReadOnlyList<ProjectConfig>? _projects;
+    private IReadOnlyList<IPlugin> _allPlugins = Array.Empty<IPlugin>();
+
+    [Inject]
+    private ThemeService ThemeService { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _activeProject = SettingsService.GetActiveProject();
+        _projects = await SettingsService.GetProjectsAsync();
+        _allPlugins = PluginLoader.GetPlugins();
+    }
+
+    private void TogglePlugin(string pluginId, bool enabled)
+    {
+        if (_activeProject == null) return;
+
+        if (enabled && !_activeProject.EnabledPlugins.Contains(pluginId))
+        {
+            _activeProject.EnabledPlugins.Add(pluginId);
+        }
+        else if (!enabled)
+        {
+            _activeProject.EnabledPlugins.Remove(pluginId);
+        }
+        // Note: Changes are applied in-memory. In MAUI, JsonSettingsService persists to disk.
+    }
+
+    private void UpdateAccentColor(string color)
+    {
+        if (_activeProject == null) return;
+        _activeProject.Theme.AccentColor = color;
+        ThemeService.SetTheme(_activeProject.Theme);
+    }
+
+    private void UpdateFontFamily(string fontFamily)
+    {
+        if (_activeProject == null) return;
+        _activeProject.Theme.FontFamily = fontFamily;
+        ThemeService.SetTheme(_activeProject.Theme);
+    }
+
+    private async Task SwitchProject(string projectId)
+    {
+        if (_activeProject?.Id == projectId) return;
+
+        await SettingsService.SetActiveProjectAsync(projectId);
+        _activeProject = SettingsService.GetActiveProject();
+    }
+}

@@ -1,0 +1,175 @@
+@using DevToolbar.Core.Interfaces
+@using DevToolbar.Core.Models
+@using DevToolbar.UI.Services
+@using DevToolbar.UI.Components
+@implements IDisposable
+@inject IPluginLoader PluginLoader
+@inject ISettingsService SettingsService
+@inject IProcessService ProcessService
+@inject INotificationService NotificationService
+@inject IScriptService ScriptService
+@inject ITimeTrackingService TimeTrackingService
+@inject ThemeService ThemeService
+
+<div class="toolbar-shell" style="@ThemeService.GetCssVariables()">
+    @* ── Zone 1: Project Selector (z-index: 20) ── *@
+    <div class="module-project">
+        <ProjectSelector />
+    </div>
+
+    @* ── Zone 2: Git Module — overlaps under Project (z-index: 10) ── *@
+    <div class="module-git">
+        @{
+            var gitPlugin = _visiblePlugins?.FirstOrDefault(p => p.UniqueId == "git-tools");
+        }
+        @if (gitPlugin?.IsEnabled == true && gitPlugin.Render() is { } gitFragment)
+        {
+            <div class="plugin-panel git-panel" data-plugin-id="@gitPlugin.UniqueId" aria-label="@gitPlugin.Name">
+                <div class="plugin-content">@gitFragment</div>
+            </div>
+        }
+    </div>
+
+    @* ── Zone 3: Quick Actions (z-index: 1) ── *@
+    <div class="module-actions">
+        <ActionDeck Actions="@_actions" OnActionClicked="HandleActionClicked" />
+    </div>
+
+    @* ── Zone 4: System — Timer + Settings (z-index: 20) ── *@
+    <div class="module-system">
+        @{
+            var activeEntry = TimeTrackingService.GetActive();
+            var isRunning = activeEntry != null && activeEntry.ProjectId == _currentProjectId;
+            var displayTime = isRunning ? activeEntry!.Duration : TimeTrackingService.GetTodayTotal(_currentProjectId);
+        }
+        <span class="system-timer-display @(isRunning ? "running" : "")" title="@(isRunning ? "Timer running" : "Today's total")">
+            <span class="system-timer-icon">⏱</span>
+            <span class="system-timer-value">@FormatTime(displayTime)</span>
+        </span>
+        <button class="system-btn" @onclick="ToggleTimeReport" title="Time Report">📊</button>
+        <a href="/settings" class="system-btn system-settings" title="Settings">⚙️</a>
+    </div>
+</div>
+
+@* ── Overlays ── *@
+<TimeReport IsVisible="@_showTimeReport" OnClose="CloseTimeReport" />
+<TerminalOutput @ref="_terminalOutput" IsVisible="@_showTerminal" OnClose="CloseTerminal" />
+<ToastContainer />
+
+@code {
+    private List<ActionConfig> _actions = new();
+    private IReadOnlyList<IPlugin>? _visiblePlugins;
+    private bool _showTimeReport;
+    private bool _showTerminal;
+    private TerminalOutput? _terminalOutput;
+    private string _currentProjectId = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        SettingsService.OnActiveProjectChanged += OnProjectChanged;
+
+        var project = SettingsService.GetActiveProject();
+        if (project != null)
+        {
+            await ApplyProjectAsync(project);
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            ThemeService.OnThemeChanged += OnThemeChanged;
+        }
+    }
+
+    private void OnThemeChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ApplyProjectAsync(ProjectConfig project)
+    {
+        _actions = project.Actions;
+        _currentProjectId = project.Id;
+        ThemeService.SetTheme(project.Theme);
+
+        var allPlugins = PluginLoader.GetPlugins();
+        _visiblePlugins = allPlugins
+            .Where(p => project.EnabledPlugins.Contains(p.UniqueId))
+            .ToList()
+            .AsReadOnly();
+
+        var context = new PluginContext { Project = project };
+        var tasks = allPlugins.Select(p => p.OnProjectChangedAsync(context));
+        await Task.WhenAll(tasks);
+    }
+
+    private void OnProjectChanged(ProjectConfig project)
+    {
+        InvokeAsync(async () =>
+        {
+            await ApplyProjectAsync(project);
+            StateHasChanged();
+        });
+    }
+
+    private void ToggleTimeReport()
+    {
+        _showTimeReport = !_showTimeReport;
+    }
+
+    private void CloseTimeReport()
+    {
+        _showTimeReport = false;
+    }
+
+    private void CloseTerminal()
+    {
+        _showTerminal = false;
+    }
+
+    private async Task HandleActionClicked(ActionConfig action)
+    {
+        try
+        {
+            if (action.ActionType == ActionType.Script)
+            {
+                _showTerminal = true;
+                StateHasChanged();
+                await Task.Yield();
+                if (_terminalOutput != null)
+                {
+                    await _terminalOutput.RunScript(ScriptService, action.Interpreter ?? "pwsh", action.ProcessPath, action.Arguments);
+                }
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(action.WindowTitleRegex))
+            {
+                if (!ProcessService.FocusWindowByTitle(action.WindowTitleRegex))
+                {
+                    await ProcessService.StartProcessAsync(action.ProcessPath, action.Arguments);
+                }
+            }
+            else
+            {
+                await ProcessService.StartProcessAsync(action.ProcessPath, action.Arguments);
+            }
+            NotificationService.ShowSuccess($"Launched {action.Label}", "Action");
+        }
+        catch (Exception ex)
+        {
+            NotificationService.ShowError($"Failed to launch {action.Label}: {ex.Message}", "Error");
+        }
+    }
+
+    public void Dispose()
+    {
+        SettingsService.OnActiveProjectChanged -= OnProjectChanged;
+        ThemeService.OnThemeChanged -= OnThemeChanged;
+    }
+
+    private static string FormatTime(TimeSpan ts) =>
+        $"{(int)ts.TotalHours:D2}:{ts.Minutes:D2}";
+}

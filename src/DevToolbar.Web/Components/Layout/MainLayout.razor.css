@@ -1,0 +1,54 @@
+/* Floating toolbar preview wrapper */
+.maui-desktop-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(160deg, #c8d0e0 0%, #d5dce8 30%, #e0e5ef 60%, #dde3ec 100%);
+    padding: 40px 24px;
+    gap: 12px;
+}
+
+/* Frame that holds the pill toolbar */
+.toolbar-preview-frame {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Preview hint text */
+.maui-preview-hint {
+    margin-top: 32px;
+    font-size: 0.8em;
+    color: rgba(60, 70, 90, 0.45);
+    text-align: center;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.maui-preview-hint strong {
+    color: rgba(60, 70, 90, 0.65);
+}
+
+/* Blazor error UI */
+#blazor-error-ui {
+    background: #7f0000;
+    color: white;
+    bottom: 0;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.5);
+    display: none;
+    left: 0;
+    padding: 12px 24px;
+    position: fixed;
+    right: 0;
+    text-align: center;
+    z-index: 2000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }

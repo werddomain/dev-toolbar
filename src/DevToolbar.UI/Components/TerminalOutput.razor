@@ -1,0 +1,80 @@
+@using DevToolbar.Core.Interfaces
+
+<div class="terminal-overlay @(_isVisible ? "visible" : "")" @onclick="Close">
+    <div class="terminal-modal" @onclick:stopPropagation="true">
+        <header class="terminal-header">
+            <h3>🖥 Terminal Output</h3>
+            <span class="terminal-title">@_title</span>
+            <button class="terminal-close" @onclick="Close">✕</button>
+        </header>
+        <div class="terminal-body">
+            <pre class="terminal-output">@_output</pre>
+        </div>
+        <footer class="terminal-footer">
+            @if (_isRunning)
+            {
+                <span class="terminal-running">⏳ Running...</span>
+            }
+            else if (_exitCode.HasValue)
+            {
+                <span class="terminal-exit @(_exitCode == 0 ? "success" : "failure")">
+                    Exit: @_exitCode
+                </span>
+            }
+        </footer>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private bool _isVisible;
+    private string _title = string.Empty;
+    private string _output = string.Empty;
+    private bool _isRunning;
+    private int? _exitCode;
+
+    protected override void OnParametersSet()
+    {
+        _isVisible = IsVisible;
+    }
+
+    public async Task RunScript(IScriptService scriptService, string interpreter, string scriptPath, string arguments = "")
+    {
+        _isVisible = true;
+        _isRunning = true;
+        _title = $"{interpreter} {scriptPath}";
+        _output = $"$ {interpreter} {scriptPath} {arguments}\n\n";
+        _exitCode = null;
+        StateHasChanged();
+
+        var result = await scriptService.ExecuteAsync(interpreter, scriptPath, arguments);
+
+        // Simulate streaming output line by line (US4.3: "logs en temps réel")
+        var lines = result.Output.Split('\n');
+        foreach (var line in lines)
+        {
+            _output += line + "\n";
+            StateHasChanged();
+            await Task.Delay(80); // simulate streaming delay
+        }
+
+        if (!string.IsNullOrEmpty(result.Error))
+        {
+            _output += $"\n[STDERR]\n{result.Error}";
+        }
+        _exitCode = result.ExitCode;
+        _isRunning = false;
+        StateHasChanged();
+    }
+
+    private async Task Close()
+    {
+        _isVisible = false;
+        await OnClose.InvokeAsync();
+    }
+}
