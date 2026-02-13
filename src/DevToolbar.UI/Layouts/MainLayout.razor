@@ -8,62 +8,47 @@
 @inject IProcessService ProcessService
 @inject INotificationService NotificationService
 @inject IScriptService ScriptService
+@inject ITimeTrackingService TimeTrackingService
 @inject ThemeService ThemeService
 
 <div class="toolbar-shell" style="@ThemeService.GetCssVariables()">
-    @* ── Left: Project module (z-index: 20) ── *@
+    @* ── Zone 1: Project Selector (z-index: 20) ── *@
     <div class="module-project">
-        <header class="toolbar-header">
-            <div class="toolbar-brand">
-                <span class="brand-icon">🛠</span>
-                <span class="brand-title">DevToolbar</span>
-            </div>
-            <div class="toolbar-header-controls">
-                <ProjectSelector />
-            </div>
-        </header>
+        <ProjectSelector />
     </div>
 
-    @* ── Middle: Git module overlapping under Project (z-index: 10) ── *@
+    @* ── Zone 2: Git Module — overlaps under Project (z-index: 10) ── *@
     <div class="module-git">
         @{
             var gitPlugin = _visiblePlugins?.FirstOrDefault(p => p.UniqueId == "git-tools");
         }
         @if (gitPlugin?.IsEnabled == true && gitPlugin.Render() is { } gitFragment)
         {
-            <div class="plugin-panel" data-plugin-id="@gitPlugin.UniqueId" aria-label="@gitPlugin.Name">
-                <h4 class="plugin-title">@gitPlugin.Name</h4>
+            <div class="plugin-panel git-panel" data-plugin-id="@gitPlugin.UniqueId" aria-label="@gitPlugin.Name">
                 <div class="plugin-content">@gitFragment</div>
             </div>
         }
     </div>
 
-    @* ── Center: Plugin zone + Actions (z-index: 1) ── *@
-    <main class="toolbar-main">
-        <section class="toolbar-plugins">
-            <PluginZone Plugins="@_pluginZonePlugins" />
-        </section>
+    @* ── Zone 3: Quick Actions (z-index: 1) ── *@
+    <div class="module-actions">
+        <ActionDeck Actions="@_actions" OnActionClicked="HandleActionClicked" />
+    </div>
 
-        <section class="toolbar-actions">
-            <ActionDeck Actions="@_actions" OnActionClicked="HandleActionClicked" />
-        </section>
-    </main>
-
-    @* ── Right: System zone (z-index: 20) ── *@
+    @* ── Zone 4: System — Timer + Settings (z-index: 20) ── *@
     <div class="module-system">
-        <button class="toolbar-report-btn" @onclick="ToggleTimeReport" title="Time Report (Ctrl+R)">📊</button>
-        <a href="/settings" class="toolbar-settings-btn" title="Settings (Ctrl+,)">⚙️</a>
+        @{
+            var activeEntry = TimeTrackingService.GetActive();
+            var isRunning = activeEntry != null && activeEntry.ProjectId == _currentProjectId;
+            var displayTime = isRunning ? activeEntry!.Duration : TimeTrackingService.GetTodayTotal(_currentProjectId);
+        }
+        <span class="system-timer-display @(isRunning ? "running" : "")" title="@(isRunning ? "Timer running" : "Today's total")">
+            <span class="system-timer-icon">⏱</span>
+            <span class="system-timer-value">@FormatTime(displayTime)</span>
+        </span>
+        <a href="/settings" class="system-btn system-settings" title="Settings">⚙️</a>
     </div>
 </div>
-
-@* ── Footer status bar below the pill ── *@
-<footer class="toolbar-footer">
-    <span class="footer-project">@_activeProjectName</span>
-    <span class="footer-separator">|</span>
-    <span class="footer-plugin-count">@_pluginCount plugins</span>
-    <span class="footer-separator">|</span>
-    <span class="footer-shortcuts">Esc to close modals</span>
-</footer>
 
 @* ── Overlays ── *@
 <TimeReport IsVisible="@_showTimeReport" OnClose="CloseTimeReport" />
@@ -73,12 +58,10 @@
 @code {
     private List<ActionConfig> _actions = new();
     private IReadOnlyList<IPlugin>? _visiblePlugins;
-    private IReadOnlyList<IPlugin>? _pluginZonePlugins;
     private bool _showTimeReport;
     private bool _showTerminal;
     private TerminalOutput? _terminalOutput;
-    private string _activeProjectName = "";
-    private int _pluginCount;
+    private string _currentProjectId = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -107,7 +90,7 @@
     private async Task ApplyProjectAsync(ProjectConfig project)
     {
         _actions = project.Actions;
-        _activeProjectName = project.Name;
+        _currentProjectId = project.Id;
         ThemeService.SetTheme(project.Theme);
 
         var allPlugins = PluginLoader.GetPlugins();
@@ -115,13 +98,6 @@
             .Where(p => project.EnabledPlugins.Contains(p.UniqueId))
             .ToList()
             .AsReadOnly();
-
-        _pluginZonePlugins = _visiblePlugins
-            .Where(p => p.UniqueId != "git-tools")
-            .ToList()
-            .AsReadOnly();
-
-        _pluginCount = _visiblePlugins.Count;
 
         var context = new PluginContext { Project = project };
         var tasks = allPlugins.Select(p => p.OnProjectChangedAsync(context));
@@ -191,5 +167,12 @@
     {
         SettingsService.OnActiveProjectChanged -= OnProjectChanged;
         ThemeService.OnThemeChanged -= OnThemeChanged;
+    }
+
+    private static string FormatTime(TimeSpan ts)
+    {
+        if (ts.TotalHours >= 1)
+            return $"{(int)ts.TotalHours:D2}:{ts.Minutes:D2}";
+        return $"{ts.Minutes:D2}:{ts.Seconds:D2}";
     }
 }
