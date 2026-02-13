@@ -30,4 +30,8 @@
     <ProjectReference Include="..\DevToolbar.Plugins\DevToolbar.Plugins.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Update="Microsoft.Maui.Controls" Version="10.0.40" />
+  </ItemGroup>
+
 </Project>
