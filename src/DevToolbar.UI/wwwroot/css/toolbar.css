@@ -1,5 +1,10 @@
+/* ==========================================================================
+   Dev Toolbar — Organic Glassmorphism Floating Pill Design
+   ========================================================================== */
+
+/* --- CSS Variables --- */
 :root {
-    --accent-color: #0078D7;
+    --accent-color: #0078D4;
     --font-family: 'Segoe UI', sans-serif;
     --bg-primary: #1e1e1e;
     --bg-secondary: #2d2d2d;
@@ -7,6 +12,14 @@
     --text-primary: #ffffff;
     --text-secondary: #cccccc;
     --border-color: #444444;
+
+    /* Glassmorphism tokens */
+    --toolbar-height: 48px;
+    --radius-pill: 999px;
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.3);
+    --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --project-color: var(--accent-color);
 }
 
 * {
@@ -17,126 +30,219 @@
 
 body {
     font-family: var(--font-family);
-    background-color: var(--bg-primary);
+    background-color: transparent;
     color: var(--text-primary);
 }
 
-/* Toolbar Shell */
+/* ==========================================================================
+   Toolbar Shell — Floating Pill Capsule
+   ========================================================================== */
 .toolbar-shell {
     display: flex;
-    flex-direction: column;
-    height: 100vh;
+    align-items: center;
+    height: var(--toolbar-height);
+    width: fit-content;
     font-family: var(--font-family);
+    border-radius: var(--radius-pill);
+    background: rgba(30, 30, 30, 0.78);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: var(--glass-border);
+    box-shadow: var(--shadow-soft);
+    padding: 0 4px;
+    gap: 2px;
+    position: relative;
 }
 
-/* Header */
+/* ==========================================================================
+   Header — Inline left section of the pill
+   ========================================================================== */
 .toolbar-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 8px 16px;
-    background-color: var(--bg-secondary);
-    border-bottom: 2px solid var(--accent-color);
+    gap: 6px;
+    padding: 0 12px;
+    height: 100%;
+    flex-shrink: 0;
 }
 
 .toolbar-brand {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .brand-icon {
-    font-size: 1.4em;
+    font-size: 1.2em;
 }
 
 .brand-title {
     font-weight: 600;
-    font-size: 1.1em;
+    font-size: 0.9em;
     color: var(--text-primary);
+    white-space: nowrap;
 }
 
-/* Project Selector */
+/* ==========================================================================
+   Module wrappers — Overlapping pill segments
+   ========================================================================== */
+.module-project {
+    display: flex;
+    align-items: center;
+    height: var(--toolbar-height);
+    background-color: var(--project-color);
+    border-radius: var(--radius-pill) 0 0 var(--radius-pill);
+    padding: 0 24px 0 16px;
+    z-index: 20;
+    position: relative;
+    color: #fff;
+}
+
+.module-git {
+    display: flex;
+    align-items: center;
+    height: var(--toolbar-height);
+    margin-left: -20px;
+    padding: 0 16px 0 28px;
+    border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+    background: rgba(20, 20, 20, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 10;
+    position: relative;
+}
+
+.module-system {
+    display: flex;
+    align-items: center;
+    height: var(--toolbar-height);
+    padding: 0 12px;
+    border-radius: var(--radius-pill);
+    background: rgba(50, 50, 50, 0.5);
+    z-index: 20;
+    position: relative;
+}
+
+/* ==========================================================================
+   Project Selector
+   ========================================================================== */
 .project-selector select {
-    background-color: var(--bg-tertiary);
+    background-color: rgba(255, 255, 255, 0.15);
     color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 6px 12px;
-    font-size: 0.9em;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-pill);
+    padding: 4px 10px;
+    font-size: 0.8em;
     cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.project-selector select:hover {
+    background-color: rgba(255, 255, 255, 0.25);
 }
 
 .project-selector select:focus {
     outline: none;
-    border-color: var(--accent-color);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
-/* Main Content */
+/* ==========================================================================
+   Main Content — Inline flow
+   ========================================================================== */
 .toolbar-main {
     display: flex;
+    align-items: center;
     flex: 1;
     overflow: hidden;
+    height: 100%;
 }
 
-/* Plugin Zone */
+/* ==========================================================================
+   Plugin Zone — Horizontal inline chips
+   ========================================================================== */
 .toolbar-plugins {
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    height: 100%;
     flex: 1;
-    padding: 12px;
-    overflow-y: auto;
 }
 
 .plugin-zone {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+    height: 100%;
 }
 
 .plugin-panel {
-    background-color: var(--bg-secondary);
-    border-radius: 6px;
-    padding: 12px;
-    border-left: 3px solid var(--accent-color);
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-pill);
+    padding: 4px 12px;
+    border-left: none;
+    height: 36px;
+    transition: background 0.2s ease;
+    white-space: nowrap;
+}
+
+.plugin-panel:hover {
+    background: rgba(255, 255, 255, 0.12);
 }
 
 .plugin-title {
-    font-size: 0.85em;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 .plugin-content {
-    font-size: 0.95em;
+    font-size: 0.85em;
+    display: flex;
+    align-items: center;
 }
 
-/* Git Plugin */
+/* ==========================================================================
+   Git Plugin — Compact inline
+   ========================================================================== */
 .plugin-git {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
     gap: 8px;
 }
 
 .git-info {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 8px;
 }
 
 .git-sync {
     display: flex;
-    gap: 8px;
+    align-items: center;
+    gap: 4px;
 }
 
 .git-btn {
-    padding: 3px 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
+    padding: 2px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-pill);
     cursor: pointer;
-    font-size: 0.8em;
+    font-size: 0.75em;
     font-weight: 600;
     transition: all 0.2s ease;
-    background-color: var(--bg-tertiary);
+    background: rgba(255, 255, 255, 0.08);
     color: var(--text-primary);
 }
 
@@ -146,7 +252,7 @@ body {
 }
 
 .git-sync-status {
-    font-size: 0.8em;
+    font-size: 0.75em;
     color: var(--text-secondary);
     font-style: italic;
 }
@@ -154,6 +260,7 @@ body {
 .git-branch {
     font-weight: 600;
     color: var(--accent-color);
+    font-size: 0.85em;
 }
 
 .git-status.clean {
@@ -164,85 +271,103 @@ body {
     color: #e8a838;
 }
 
-/* Action Deck */
+/* ==========================================================================
+   Action Deck — Horizontal icon buttons
+   ========================================================================== */
 .toolbar-actions {
-    width: 200px;
-    padding: 12px;
-    background-color: var(--bg-secondary);
-    border-left: 1px solid var(--border-color);
-    overflow-y: auto;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    height: 100%;
+    flex-shrink: 0;
 }
 
 .action-deck {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    flex-direction: row;
+    gap: 4px;
+    align-items: center;
 }
 
 .action-button {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
-    background-color: var(--bg-tertiary);
+    justify-content: center;
+    gap: 4px;
+    padding: 6px;
+    background: transparent;
     color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
+    border: 1px solid transparent;
+    border-radius: 50%;
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: 0.85em;
     transition: all 0.2s ease;
+    width: 32px;
+    height: 32px;
 }
 
 .action-button:hover {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 .action-icon {
-    font-size: 1.2em;
+    font-size: 1.1em;
 }
 
 .action-label {
-    white-space: nowrap;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
     overflow: hidden;
-    text-overflow: ellipsis;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
-/* Work Items Plugin */
+/* ==========================================================================
+   Work Items Plugin — Compact inline
+   ========================================================================== */
 .plugin-workitems {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
 }
 
 .workitem-active {
     display: flex;
     align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    gap: 6px;
+    flex-wrap: nowrap;
 }
 
 .workitem-id {
     font-weight: 700;
     color: var(--accent-color);
-    font-size: 0.95em;
+    font-size: 0.8em;
 }
 
 .workitem-title {
-    flex: 1;
-    font-size: 0.95em;
+    font-size: 0.8em;
     color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
 }
 
 .workitem-state {
-    font-size: 0.8em;
-    padding: 2px 8px;
+    font-size: 0.7em;
+    padding: 1px 6px;
     border-radius: 10px;
     font-weight: 600;
 }
 
 .workitem-state-active {
-    background-color: #0078D7;
+    background-color: var(--accent-color);
     color: white;
 }
 
@@ -259,25 +384,27 @@ body {
 .workitem-none {
     color: var(--text-secondary);
     font-style: italic;
+    font-size: 0.8em;
 }
 
 .workitem-recent {
-    border-top: 1px solid var(--border-color);
-    padding-top: 8px;
+    border-top: none;
+    padding-top: 0;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 4px;
+    align-items: center;
 }
 
 .workitem-recent-label {
-    font-size: 0.75em;
+    font-size: 0.7em;
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .workitem-entry {
-    font-size: 0.85em;
+    font-size: 0.8em;
 }
 
 .workitem-link {
@@ -289,23 +416,26 @@ body {
     text-decoration: underline;
 }
 
-/* Time Tracker Plugin */
+/* ==========================================================================
+   Time Tracker Plugin — Compact inline
+   ========================================================================== */
 .plugin-timetracker {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
     gap: 8px;
 }
 
 .timer-display {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
 }
 
 .timer-status {
-    font-size: 0.85em;
+    font-size: 0.7em;
     font-weight: 600;
-    padding: 2px 8px;
+    padding: 1px 6px;
     border-radius: 10px;
 }
 
@@ -327,7 +457,7 @@ body {
 
 .timer-duration {
     font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 1.3em;
+    font-size: 1em;
     font-weight: 700;
     color: var(--text-primary);
     letter-spacing: 1px;
@@ -336,69 +466,81 @@ body {
 .timer-today {
     display: flex;
     align-items: center;
-    gap: 8px;
-    border-top: 1px solid var(--border-color);
-    padding-top: 6px;
+    gap: 4px;
+    border-top: none;
+    padding-top: 0;
+    padding-left: 4px;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .timer-today-label {
-    font-size: 0.8em;
+    font-size: 0.7em;
     color: var(--text-secondary);
 }
 
 .timer-today-value {
     font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 0.95em;
+    font-size: 0.8em;
     color: var(--accent-color);
 }
 
-/* CI/CD Plugin */
+/* ==========================================================================
+   CI/CD Plugin — Compact inline
+   ========================================================================== */
 .plugin-cicd {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
 }
 
 .cicd-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
 }
 
 .cicd-icon {
-    font-size: 1.1em;
+    font-size: 1em;
 }
 
 .cicd-label {
-    font-size: 0.9em;
+    font-size: 0.8em;
     color: var(--text-secondary);
 }
 
 .cicd-badge {
     background-color: #E53935;
     color: white;
-    font-size: 0.75em;
+    font-size: 0.65em;
     font-weight: 700;
-    padding: 2px 7px;
+    padding: 1px 5px;
     border-radius: 10px;
-    min-width: 20px;
+    min-width: 16px;
     text-align: center;
 }
 
 .cicd-sessions {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 4px;
+    align-items: center;
 }
 
 .cicd-session {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 4px 8px;
-    border-radius: 4px;
-    background-color: var(--bg-tertiary);
-    font-size: 0.85em;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.06);
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.cicd-session:hover {
+    background: rgba(255, 255, 255, 0.14);
 }
 
 .cicd-session.unread {
@@ -418,13 +560,14 @@ body {
 }
 
 .cicd-session-icon {
-    font-size: 1em;
+    font-size: 0.9em;
 }
 
 .cicd-session-name {
     flex: 1;
     color: var(--text-primary);
     text-decoration: none;
+    font-size: 0.85em;
 }
 
 .cicd-session-name:hover {
@@ -433,25 +576,27 @@ body {
 }
 
 .cicd-session-branch {
-    font-size: 0.8em;
+    font-size: 0.75em;
     color: var(--text-secondary);
     font-style: italic;
 }
 
-/* Timer Controls */
+/* ==========================================================================
+   Timer Controls
+   ========================================================================== */
 .timer-controls {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 6px;
+    gap: 6px;
+    margin-bottom: 0;
 }
 
 .timer-btn {
-    padding: 4px 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
+    padding: 2px 10px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-pill);
     cursor: pointer;
-    font-size: 0.85em;
+    font-size: 0.75em;
     font-weight: 600;
     transition: all 0.2s ease;
 }
@@ -476,16 +621,18 @@ body {
     background-color: #c62828;
 }
 
-/* CI/CD Mark as Read */
+/* ==========================================================================
+   CI/CD Mark as Read
+   ========================================================================== */
 .cicd-mark-all-read {
     margin-left: auto;
     background: none;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     color: var(--text-secondary);
-    padding: 2px 8px;
-    border-radius: 4px;
+    padding: 1px 6px;
+    border-radius: var(--radius-pill);
     cursor: pointer;
-    font-size: 0.75em;
+    font-size: 0.7em;
     transition: all 0.2s ease;
 }
 
@@ -495,16 +642,9 @@ body {
     border-color: var(--accent-color);
 }
 
-.cicd-session {
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.cicd-session:hover {
-    background-color: var(--bg-secondary);
-}
-
-/* Toast Notifications */
+/* ==========================================================================
+   Toast Notifications — Keep fixed overlay
+   ========================================================================== */
 .toast-container {
     position: fixed;
     bottom: 16px;
@@ -518,11 +658,13 @@ body {
 
 .toast {
     padding: 10px 16px;
-    border-radius: 6px;
+    border-radius: 12px;
     font-size: 0.85em;
     color: white;
     animation: toast-slide-in 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 @keyframes toast-slide-in {
@@ -537,21 +679,21 @@ body {
 }
 
 .toast-info {
-    background-color: #0078D7;
+    background-color: color-mix(in srgb, var(--accent-color) 90%, transparent);
 }
 
 .toast-success {
-    background-color: #4ec94e;
+    background-color: rgba(78, 201, 78, 0.9);
     color: #1e1e1e;
 }
 
 .toast-warning {
-    background-color: #e8a838;
+    background-color: rgba(232, 168, 56, 0.9);
     color: #1e1e1e;
 }
 
 .toast-error {
-    background-color: #E53935;
+    background-color: rgba(229, 57, 53, 0.9);
 }
 
 .toast-title {
@@ -563,29 +705,37 @@ body {
     font-size: 0.9em;
 }
 
-/* Header Controls */
+/* ==========================================================================
+   Header Controls — Inline in the pill
+   ========================================================================== */
 .toolbar-header-controls {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
 }
 
 .toolbar-settings-btn {
     text-decoration: none;
-    font-size: 1.3em;
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
+    font-size: 1.1em;
+    opacity: 0.6;
+    transition: all 0.2s ease;
 }
 
 .toolbar-settings-btn:hover {
     opacity: 1;
 }
 
-/* Settings Page */
+/* ==========================================================================
+   Settings Page — Full vertical layout (separate page)
+   ========================================================================== */
 .settings-page {
-    padding: 16px 24px;
+    padding: 24px 32px;
     max-width: 800px;
     margin: 0 auto;
+    background: rgba(30, 30, 30, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    min-height: 100vh;
 }
 
 .settings-header {
@@ -619,8 +769,10 @@ body {
 }
 
 .settings-section {
-    background-color: var(--bg-secondary);
-    border-radius: 6px;
+    background: rgba(45, 45, 45, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 10px;
     padding: 16px;
     border-left: 3px solid var(--accent-color);
 }
@@ -685,9 +837,15 @@ body {
     align-items: center;
     gap: 10px;
     padding: 6px 8px;
-    border-radius: 4px;
-    background-color: var(--bg-tertiary);
+    border-radius: 6px;
+    background: rgba(60, 60, 60, 0.5);
     font-size: 0.85em;
+    transition: background 0.2s ease;
+}
+
+.settings-plugin-row:hover,
+.settings-action-row:hover {
+    background: rgba(60, 60, 60, 0.8);
 }
 
 .settings-plugin-status.enabled {
@@ -759,7 +917,9 @@ body {
     font-weight: 600;
 }
 
-/* Time Report Modal */
+/* ==========================================================================
+   Time Report Modal — Full overlay (preserved)
+   ========================================================================== */
 .time-report-overlay {
     display: none;
     position: fixed;
@@ -778,14 +938,16 @@ body {
 }
 
 .time-report-modal {
-    background-color: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
+    background: rgba(30, 30, 30, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
     width: 600px;
     max-height: 80vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
 }
 
 .time-report-header {
@@ -807,6 +969,7 @@ body {
     color: var(--text-secondary);
     font-size: 1.2em;
     cursor: pointer;
+    transition: color 0.2s ease;
 }
 
 .time-report-close:hover {
@@ -836,7 +999,7 @@ body {
     border: 1px solid var(--border-color);
     color: var(--text-secondary);
     padding: 4px 10px;
-    border-radius: 4px;
+    border-radius: var(--radius-pill);
     cursor: pointer;
     font-size: 0.8em;
     transition: all 0.2s ease;
@@ -860,8 +1023,8 @@ body {
     gap: 8px;
     margin-bottom: 12px;
     padding: 8px 12px;
-    background-color: var(--bg-secondary);
-    border-radius: 4px;
+    background: rgba(45, 45, 45, 0.6);
+    border-radius: 8px;
 }
 
 .time-report-total-label {
@@ -909,21 +1072,25 @@ body {
     padding: 24px;
 }
 
-/* Report Button in Header */
+/* ==========================================================================
+   Report Button
+   ========================================================================== */
 .toolbar-report-btn {
     background: none;
     border: none;
-    font-size: 1.2em;
+    font-size: 1.1em;
     cursor: pointer;
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
+    opacity: 0.6;
+    transition: all 0.2s ease;
 }
 
 .toolbar-report-btn:hover {
     opacity: 1;
 }
 
-/* Terminal Output Modal */
+/* ==========================================================================
+   Terminal Output Modal — Full overlay (preserved)
+   ========================================================================== */
 .terminal-overlay {
     display: none;
     position: fixed;
@@ -942,14 +1109,16 @@ body {
 }
 
 .terminal-modal {
-    background-color: #0c0c0c;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
+    background-color: rgba(12, 12, 12, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
     width: 650px;
     max-height: 80vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
 }
 
 .terminal-header {
@@ -957,9 +1126,9 @@ body {
     align-items: center;
     gap: 12px;
     padding: 10px 16px;
-    background-color: var(--bg-secondary);
-    border-bottom: 1px solid var(--border-color);
-    border-radius: 8px 8px 0 0;
+    background: rgba(45, 45, 45, 0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px 16px 0 0;
 }
 
 .terminal-header h3 {
@@ -980,6 +1149,7 @@ body {
     color: var(--text-secondary);
     font-size: 1.2em;
     cursor: pointer;
+    transition: color 0.2s ease;
 }
 
 .terminal-close:hover {
@@ -1005,7 +1175,7 @@ body {
 
 .terminal-footer {
     padding: 8px 16px;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
     font-size: 0.85em;
 }
 
@@ -1021,25 +1191,28 @@ body {
     color: #E53935;
 }
 
-/* Smart Process Button (US4.2) */
+/* ==========================================================================
+   Smart Process Button — Compact inline pill
+   ========================================================================== */
 .smart-process-btn {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
-    background-color: var(--bg-tertiary);
+    gap: 4px;
+    padding: 4px 10px;
+    background: transparent;
     color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-pill);
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: 0.8em;
     transition: all 0.2s ease;
-    width: 100%;
+    width: auto;
+    height: 32px;
 }
 
 .smart-process-btn:hover {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 .smart-process-btn.focused {
@@ -1048,34 +1221,36 @@ body {
 }
 
 .smart-process-icon {
-    font-size: 1.2em;
+    font-size: 1.1em;
 }
 
 .smart-process-label {
-    flex: 1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100px;
 }
 
 .smart-process-badge {
     background-color: #4ec94e;
     color: #1e1e1e;
-    padding: 1px 6px;
+    padding: 1px 5px;
     border-radius: 8px;
-    font-size: 0.7em;
+    font-size: 0.65em;
     font-weight: 700;
 }
 
-/* Work Items Search (US5.2) */
+/* ==========================================================================
+   Work Items Search (US5.2)
+   ========================================================================== */
 .workitem-search-toggle {
     background: none;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     color: var(--text-secondary);
-    padding: 2px 8px;
-    border-radius: 4px;
+    padding: 1px 6px;
+    border-radius: var(--radius-pill);
     cursor: pointer;
-    font-size: 0.8em;
+    font-size: 0.75em;
     margin-left: auto;
     transition: all 0.2s ease;
 }
@@ -1094,14 +1269,15 @@ body {
 }
 
 .workitem-search-input {
-    background-color: var(--bg-tertiary);
+    background: rgba(60, 60, 60, 0.6);
     color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
     padding: 6px 10px;
     font-size: 0.85em;
     font-family: var(--font-family);
     outline: none;
+    transition: border-color 0.2s ease;
 }
 
 .workitem-search-input:focus {
@@ -1116,9 +1292,11 @@ body {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    background-color: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
+    background: rgba(30, 30, 30, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
     max-height: 200px;
     overflow-y: auto;
 }
@@ -1134,11 +1312,11 @@ body {
 }
 
 .workitem-dropdown-item:hover {
-    background-color: var(--bg-tertiary);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .workitem-dropdown-item.active {
-    background-color: rgba(0, 120, 215, 0.2);
+    background-color: rgba(0, 120, 212, 0.2);
     border-left: 3px solid var(--accent-color);
 }
 
@@ -1157,7 +1335,9 @@ body {
     text-overflow: ellipsis;
 }
 
-/* Timer Idle Status (US5.3) */
+/* ==========================================================================
+   Timer Idle Status (US5.3)
+   ========================================================================== */
 .timer-status.idle {
     background-color: #e8a838;
     color: #1e1e1e;
@@ -1174,29 +1354,31 @@ body {
 .timer-idle-info {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .timer-idle-label {
-    font-size: 0.75em;
+    font-size: 0.7em;
     color: var(--text-secondary);
     font-style: italic;
 }
 
-/* Timer Work Item Association (US5.3) */
+/* ==========================================================================
+   Timer Work Item Association (US5.3)
+   ========================================================================== */
 .timer-workitem {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 8px;
-    background-color: var(--bg-tertiary);
-    border-radius: 4px;
-    font-size: 0.85em;
-    margin-top: 4px;
+    gap: 4px;
+    padding: 2px 8px;
+    background: rgba(60, 60, 60, 0.4);
+    border-radius: var(--radius-pill);
+    font-size: 0.8em;
+    margin-top: 0;
 }
 
 .timer-workitem-label {
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 
 .timer-workitem-id {
@@ -1209,16 +1391,18 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 150px;
+    max-width: 100px;
 }
 
 .timer-workitem-none {
     color: var(--text-secondary);
     font-style: italic;
-    font-size: 0.85em;
+    font-size: 0.8em;
 }
 
-/* Time Report Grouped View (US5.4) */
+/* ==========================================================================
+   Time Report Grouped View (US5.4)
+   ========================================================================== */
 .time-report-grouped {
     display: flex;
     flex-direction: column;
@@ -1227,7 +1411,7 @@ body {
 
 .time-report-group {
     border: 1px solid var(--border-color);
-    border-radius: 6px;
+    border-radius: 8px;
     overflow: hidden;
 }
 
@@ -1236,7 +1420,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 8px 12px;
-    background-color: var(--bg-tertiary);
+    background: rgba(60, 60, 60, 0.5);
     font-weight: bold;
     font-size: 0.9em;
 }
@@ -1260,7 +1444,9 @@ body {
     color: var(--text-secondary);
 }
 
-/* Settings Link */
+/* ==========================================================================
+   Settings Link
+   ========================================================================== */
 .settings-link {
     color: var(--accent-color);
     text-decoration: none;
@@ -1270,7 +1456,9 @@ body {
     text-decoration: underline;
 }
 
-/* Settings Toggle Switch */
+/* ==========================================================================
+   Settings Toggle Switch
+   ========================================================================== */
 .settings-toggle {
     position: relative;
     display: inline-block;
@@ -1324,10 +1512,12 @@ body {
 }
 
 .settings-project-row[style*="cursor: pointer"]:hover {
-    background-color: var(--bg-secondary);
+    background: rgba(60, 60, 60, 0.8);
 }
 
-/* Config Hierarchy (US2.2) */
+/* ==========================================================================
+   Config Hierarchy (US2.2)
+   ========================================================================== */
 .settings-description {
     font-size: 0.85em;
     color: var(--text-muted, #888);
@@ -1345,9 +1535,9 @@ body {
     align-items: center;
     gap: 10px;
     padding: 8px 12px;
-    background: var(--bg-secondary, #1e1e1e);
-    border-radius: 6px;
-    border-left: 3px solid var(--accent-color, #0078D7);
+    background: rgba(45, 45, 45, 0.6);
+    border-radius: 8px;
+    border-left: 3px solid var(--accent-color, #0078D4);
 }
 
 .config-level-badge {
@@ -1362,6 +1552,7 @@ body {
     color: white;
     flex-shrink: 0;
 }
+
 .config-level-1 { background: #E53935; }
 .config-level-2 { background: #FB8C00; }
 .config-level-3 { background: #43A047; }
@@ -1382,57 +1573,65 @@ body {
     font-family: monospace;
     font-size: 0.75em;
     color: var(--text-muted, #666);
-    background: var(--bg-primary, #111);
+    background: rgba(17, 17, 17, 0.7);
     padding: 2px 6px;
     border-radius: 3px;
 }
 
-/* Status Bar Footer */
+/* ==========================================================================
+   Status Bar Footer — Thin line below the pill
+   ========================================================================== */
 .toolbar-footer {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 4px 16px;
-    background-color: var(--accent-color);
-    color: white;
-    font-size: 0.75em;
+    padding: 2px 16px;
+    background: color-mix(in srgb, var(--accent-color) 15%, transparent);
+    color: var(--text-secondary);
+    font-size: 0.65em;
     flex-shrink: 0;
+    border-radius: 0 0 var(--radius-pill) var(--radius-pill);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .footer-project {
     font-weight: 700;
+    color: var(--accent-color);
 }
 
 .footer-separator {
-    opacity: 0.5;
+    opacity: 0.4;
 }
 
 .footer-plugin-count {
-    opacity: 0.9;
+    opacity: 0.8;
 }
 
 .footer-shortcuts {
     margin-left: auto;
-    opacity: 0.7;
+    opacity: 0.6;
     font-style: italic;
 }
 
-/* Theme Editor (US3.2) */
+/* ==========================================================================
+   Theme Editor (US3.2)
+   ========================================================================== */
 .settings-color-picker {
     width: 36px;
     height: 28px;
     border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border-radius: 6px;
     padding: 2px;
     cursor: pointer;
     background: transparent;
 }
 
 .settings-font-select {
-    background-color: var(--bg-secondary);
+    background: rgba(45, 45, 45, 0.7);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border-radius: 6px;
     padding: 6px 10px;
     font-size: 0.9em;
     cursor: pointer;
@@ -1441,38 +1640,4 @@ body {
 .settings-font-select:focus {
     outline: none;
     border-color: var(--accent-color);
-}
-
-/* SmartProcessButton styles (US4.2) */
-.smart-process-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s, border-color 0.2s;
-    font-size: 0.85em;
-}
-
-.smart-process-btn:hover {
-    background-color: var(--bg-hover);
-    border-color: var(--accent-color);
-}
-
-.smart-process-btn.focused {
-    border-color: var(--accent-color);
-    background-color: color-mix(in srgb, var(--accent-color) 15%, transparent);
-}
-
-.smart-process-badge {
-    background-color: var(--accent-color);
-    color: white;
-    padding: 1px 6px;
-    border-radius: 8px;
-    font-size: 0.75em;
-    font-weight: 600;
 }
