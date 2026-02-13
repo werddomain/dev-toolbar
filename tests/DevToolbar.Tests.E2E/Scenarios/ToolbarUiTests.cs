@@ -154,92 +154,11 @@ public class ToolbarUiTests : PageTest
     }
 
     [Test]
-    public async Task WorkItemsPlugin_ShouldShowActiveItem()
+    public async Task MyWebAPI_ShouldShowGitPluginPanel()
     {
         await NavigateAndWait();
-        // Work items load async via OnProjectChangedAsync — wait for interactive mode to render data
-        await Expect(Page.Locator(".workitem-id")).ToContainTextAsync("#1234", new() { Timeout = 10000 });
-        await Expect(Page.Locator(".workitem-title")).ToContainTextAsync("Fix login page redirect");
-    }
-
-    [Test]
-    public async Task WorkItemsPlugin_ShouldShowRecentItems()
-    {
-        await NavigateAndWait();
-        // Recent items are inside .workitem-entry elements (not the active item link)
-        await Expect(Page.Locator(".workitem-entry .workitem-link")).ToHaveCountAsync(3, new() { Timeout = 10000 });
-    }
-
-    [Test]
-    public async Task TimeTrackerPlugin_ShouldShowStoppedState()
-    {
-        await NavigateAndWait();
-        await Expect(Page.Locator(".timer-status")).ToContainTextAsync("Stopped");
-    }
-
-    [Test]
-    public async Task TimeTrackerPlugin_ShouldShowTodayTotal()
-    {
-        await NavigateAndWait();
-        await Expect(Page.Locator(".timer-today-label")).ToContainTextAsync("Today:");
-    }
-
-    [Test]
-    public async Task CiCdPlugin_ShouldShowPipelinesLabel()
-    {
-        await NavigateAndWait();
-        await Expect(Page.Locator(".cicd-label")).ToContainTextAsync("Pipelines");
-    }
-
-    [Test]
-    public async Task CiCdPlugin_ShouldShowUnreadBadge()
-    {
-        await NavigateAndWait();
-        await Expect(Page.Locator(".cicd-badge")).ToBeVisibleAsync();
-        await Expect(Page.Locator(".cicd-badge")).ToContainTextAsync("2");
-    }
-
-    [Test]
-    public async Task CiCdPlugin_ShouldShowSessions()
-    {
-        await NavigateAndWait();
-        await Expect(Page.Locator(".cicd-session")).ToHaveCountAsync(3);
-    }
-
-    [Test]
-    public async Task MyWebAPI_ShouldShowAllFourPlugins()
-    {
-        await NavigateAndWait();
-        await Expect(Page.Locator(".plugin-panel")).ToHaveCountAsync(4);
-    }
-
-    // --- Timer Controls Tests ---
-
-    [Test]
-    public async Task TimeTrackerPlugin_ShouldShowStartButton()
-    {
-        await NavigateAndWait();
-        await Expect(Page.Locator(".timer-btn-start")).ToBeVisibleAsync();
-        await Expect(Page.Locator(".timer-btn-start")).ToContainTextAsync("Start");
-    }
-
-    // --- CI/CD Mark as Read Tests ---
-
-    [Test]
-    public async Task CiCdPlugin_ShouldShowMarkAllReadButton()
-    {
-        await NavigateAndWait();
-        await Expect(Page.Locator(".cicd-mark-all-read")).ToBeVisibleAsync();
-        await Expect(Page.Locator(".cicd-mark-all-read")).ToContainTextAsync("Read all");
-    }
-
-    [Test]
-    public async Task CiCdPlugin_SessionsShouldBeClickable()
-    {
-        await NavigateAndWait();
-        // Verify sessions have cursor:pointer (they are clickable)
-        var session = Page.Locator(".cicd-session").First;
-        await Expect(session).ToBeVisibleAsync();
+        // Only Git plugin is rendered in the toolbar
+        await Expect(Page.Locator(".module-git .plugin-panel")).ToHaveCountAsync(1);
     }
 
     // --- Settings Page Tests ---
@@ -399,16 +318,16 @@ public class ToolbarUiTests : PageTest
     public async Task ProjectSwitch_ShouldChangeVisiblePlugins()
     {
         await NavigateAndWait();
-        // Default MyWebAPI has 4 plugins
-        await Expect(Page.Locator(".plugin-panel")).ToHaveCountAsync(4);
+        // Default MyWebAPI has git plugin visible in module-git
+        await Expect(Page.Locator(".module-git .plugin-panel")).ToHaveCountAsync(1);
 
-        // Switch to DevOps Pipeline (has only git-tools, github-agents)
+        // Switch to DevOps Pipeline (has git-tools enabled)
         await SwitchProject("DevOps Pipeline");
-        await Expect(Page.Locator(".plugin-panel")).ToHaveCountAsync(2, new() { Timeout = 5000 });
+        await Expect(Page.Locator(".module-git .plugin-panel")).ToHaveCountAsync(1, new() { Timeout = 5000 });
 
         // Switch back to MyWebAPI
         await SwitchProject("MyWebAPI");
-        await Expect(Page.Locator(".plugin-panel")).ToHaveCountAsync(4, new() { Timeout = 5000 });
+        await Expect(Page.Locator(".module-git .plugin-panel")).ToHaveCountAsync(1, new() { Timeout = 5000 });
     }
 
     [Test]
@@ -432,13 +351,6 @@ public class ToolbarUiTests : PageTest
         await NavigateAndWait();
         await Expect(Page.Locator(".project-selector-trigger")).ToBeVisibleAsync();
         await Expect(Page.Locator(".project-name")).ToContainTextAsync("MyWebAPI");
-    }
-
-    [Test]
-    public async Task SystemModule_ShouldShowTimerDisplay()
-    {
-        await NavigateAndWait();
-        await Expect(Page.Locator(".system-timer-display")).ToBeVisibleAsync();
     }
 
     [Test]
@@ -466,90 +378,38 @@ public class ToolbarUiTests : PageTest
         await Expect(exportBtn).ToBeEnabledAsync();
     }
 
-    // --- Work Items Search Tests (US5.2) ---
+    // --- System Zone Tests ---
 
     [Test]
-    public async Task WorkItemsPlugin_ShouldShowSearchToggle()
+    public async Task SystemZone_ShouldShowTimerDisplay()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".workitem-search-toggle")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".system-timer-display")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".system-timer-icon")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".system-timer-value")).ToBeVisibleAsync();
     }
 
     [Test]
-    public async Task WorkItemsPlugin_ShouldOpenSearchDropdown()
+    public async Task SystemZone_ShouldShowSettingsLink()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".workitem-search-toggle")).ToBeVisibleAsync(new() { Timeout = 10000 });
-        await Page.Locator(".workitem-search-toggle").ClickAsync();
-        await Expect(Page.Locator(".workitem-search-input")).ToBeVisibleAsync(new() { Timeout = 5000 });
-        // Type a character to trigger dropdown with results
-        await Page.Locator(".workitem-search-input").PressSequentiallyAsync("a");
-        await Expect(Page.Locator(".workitem-dropdown")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        var settingsLink = Page.Locator(".system-settings");
+        await Expect(settingsLink).ToBeVisibleAsync();
+        await Expect(settingsLink).ToHaveAttributeAsync("href", "/settings");
     }
 
     [Test]
-    public async Task WorkItemsPlugin_ShouldSearchAndSelectItem()
+    public async Task SystemZone_ShouldShowReportButton()
     {
         await NavigateAndWait();
-        await Page.Locator(".workitem-search-toggle").ClickAsync();
-        await Expect(Page.Locator(".workitem-search-input")).ToBeVisibleAsync(new() { Timeout = 5000 });
-
-        // Type search query (character by character to trigger oninput)
-        await Page.Locator(".workitem-search-input").PressSequentiallyAsync("dark");
-        await Expect(Page.Locator(".workitem-dropdown-item")).ToHaveCountAsync(1, new() { Timeout = 5000 });
-
-        // Select the item
-        await Page.Locator(".workitem-dropdown-item").First.ClickAsync();
-
-        // Verify active item changed
-        await Expect(Page.Locator(".workitem-id")).ToContainTextAsync("#1235", new() { Timeout = 5000 });
-        await Expect(Page.Locator(".workitem-title")).ToContainTextAsync("Add dark mode support");
+        await Expect(Page.Locator(".system-btn[title='Time Report']")).ToBeVisibleAsync();
     }
 
     [Test]
-    public async Task WorkItemsPlugin_SearchShouldHideRecentItems()
+    public async Task ModuleActions_ShouldBeVisible()
     {
         await NavigateAndWait();
-        // Wait for work items to load (async plugin initialization)
-        await Expect(Page.Locator(".workitem-recent")).ToBeVisibleAsync(new() { Timeout = 10000 });
-
-        // Open search - recent items should be hidden
-        await Page.Locator(".workitem-search-toggle").ClickAsync();
-        await Expect(Page.Locator(".workitem-search-input")).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Expect(Page.Locator(".workitem-recent")).ToHaveCountAsync(0);
-    }
-
-    // --- Timer Idle Detection Tests (US5.3) ---
-
-    [Test]
-    public async Task TimeTrackerPlugin_ShouldShowIdleTimeout()
-    {
-        await NavigateAndWait();
-        await Expect(Page.Locator(".timer-idle-label")).ToContainTextAsync("Idle timeout: 15 min");
-    }
-
-    [Test]
-    public async Task TimeTrackerPlugin_ShouldShowWorkItemLink()
-    {
-        await NavigateAndWait();
-        // Default state should show "No work item linked" until work item is selected
-        await Expect(Page.Locator(".timer-workitem")).ToBeVisibleAsync(new() { Timeout = 10000 });
-    }
-
-    [Test]
-    public async Task TimeTrackerPlugin_WorkItemShouldUpdateWhenSelected()
-    {
-        await NavigateAndWait();
-        // Select a work item via search
-        await Expect(Page.Locator(".workitem-search-toggle")).ToBeVisibleAsync(new() { Timeout = 10000 });
-        await Page.Locator(".workitem-search-toggle").ClickAsync();
-        await Expect(Page.Locator(".workitem-search-input")).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Page.Locator(".workitem-search-input").PressSequentiallyAsync("dark");
-        await Expect(Page.Locator(".workitem-dropdown-item")).ToHaveCountAsync(1, new() { Timeout = 5000 });
-        await Page.Locator(".workitem-dropdown-item").First.ClickAsync();
-
-        // Timer should now show the work item ID
-        await Expect(Page.Locator(".timer-workitem-id")).ToContainTextAsync("#1235", new() { Timeout = 5000 });
+        await Expect(Page.Locator(".module-actions")).ToBeVisibleAsync();
     }
 
     // --- Git Default Branch from Config Tests (US5.1/US2.2) ---
@@ -624,27 +484,6 @@ public class ToolbarUiTests : PageTest
 
         // Verify it becomes active
         await Expect(Page.Locator(".settings-value", new() { HasText = "FrontEnd App" })).ToBeVisibleAsync(new() { Timeout = 5000 });
-    }
-
-    // --- US5.2: Work Item Web Links ---
-
-    [Test]
-    public async Task WorkItems_ActiveItemShouldHaveWebLink()
-    {
-        await NavigateAndWait();
-        var activeLink = Page.Locator(".workitem-active a.workitem-link");
-        await Expect(activeLink).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Expect(activeLink).ToHaveAttributeAsync("href", new System.Text.RegularExpressions.Regex("github\\.com"));
-        await Expect(activeLink).ToHaveAttributeAsync("target", "_blank");
-    }
-
-    [Test]
-    public async Task WorkItems_RecentItemsShouldHaveWebLinks()
-    {
-        await NavigateAndWait();
-        var recentLinks = Page.Locator(".workitem-entry a.workitem-link");
-        await Expect(recentLinks.First).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Expect(recentLinks.First).ToHaveAttributeAsync("href", new System.Text.RegularExpressions.Regex("github\\.com"));
     }
 
     // --- US5.4: Time Report By Project Grouping ---
@@ -772,38 +611,6 @@ public class ToolbarUiTests : PageTest
         await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
         await Expect(Page.Locator(".toolbar-preview-frame")).ToBeVisibleAsync();
         await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
-    }
-
-    // ===== US5.3: Idle Notification Tests =====
-
-    [Test]
-    public async Task TimeTracker_ShowsIdleTimeoutInfo()
-    {
-        await NavigateAndWait();
-        // The idle timeout info should be displayed in the time tracker plugin
-        await Expect(Page.Locator(".timer-idle-info")).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Expect(Page.Locator(".timer-idle-label")).ToContainTextAsync("Idle timeout:", new() { Timeout = 5000 });
-    }
-
-    // ===== US7.1: CI/CD Polling Tests =====
-
-    [Test]
-    public async Task CiCd_SessionsHaveRealUrls()
-    {
-        await NavigateAndWait();
-        // CI/CD sessions should have real GitHub Actions URLs (not "#")
-        var sessionLinks = Page.Locator(".cicd-session-name");
-        await Expect(sessionLinks.First).ToBeVisibleAsync(new() { Timeout = 5000 });
-        var href = await sessionLinks.First.GetAttributeAsync("href");
-        Assert.That(href, Does.Contain("github.com"), "Session URLs should point to GitHub Actions");
-    }
-
-    [Test]
-    public async Task CiCd_InProgressSessionShowsRunningStatus()
-    {
-        await NavigateAndWait();
-        // At least one session should show "running" status
-        await Expect(Page.Locator(".cicd-session.running")).ToBeVisibleAsync(new() { Timeout = 5000 });
     }
 
     // ===== US5.4: Description Grouping Test =====

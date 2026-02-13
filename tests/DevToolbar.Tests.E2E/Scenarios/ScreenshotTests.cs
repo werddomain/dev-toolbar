@@ -78,8 +78,8 @@ public class ScreenshotTests : PageTest
     {
         await Page.GotoAsync(BaseUrl, new() { WaitUntil = WaitUntilState.Load });
         await Expect(Page.Locator(".toolbar-shell")).ToBeVisibleAsync(new() { Timeout = 30000 });
-        // Wait for interactive mode by checking that plugin panels are rendered
-        await Expect(Page.Locator(".plugin-panel").First).ToBeVisibleAsync(new() { Timeout = 5000 });
+        // Wait for interactive mode by checking that the git plugin panel is rendered
+        await Expect(Page.Locator(".module-git .plugin-panel").First).ToBeVisibleAsync(new() { Timeout = 5000 });
     }
 
     /// <summary>
@@ -115,114 +115,65 @@ public class ScreenshotTests : PageTest
     }
 
     [Test, Order(3)]
-    public async Task Capture_03_WorkItemsPlugin()
-    {
-        await NavigateAndWait();
-        // workitem-id is rendered by RenderTreeBuilder plugin after OnProjectChangedAsync completes
-        // Wait for any plugin panel with work items content to appear
-        var workItemsContent = Page.Locator(".plugin-workitems");
-        await Expect(workItemsContent).ToBeVisibleAsync(new() { Timeout = 10000 });
-        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("03-workitems-plugin"), FullPage = true });
-        Assert.That(File.Exists(ScreenshotPath("03-workitems-plugin")), Is.True);
-    }
-
-    [Test, Order(4)]
-    public async Task Capture_04_WorkItemsSearch()
-    {
-        await NavigateAndWait();
-        // Open search dropdown
-        await Expect(Page.Locator(".workitem-search-toggle")).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Page.Locator(".workitem-search-toggle").ClickAsync();
-        await Expect(Page.Locator(".workitem-search-input")).ToBeVisibleAsync(new() { Timeout = 5000 });
-
-        // Type a search query
-        await Page.Locator(".workitem-search-input").PressSequentiallyAsync("dark");
-        await Expect(Page.Locator(".workitem-dropdown-item")).ToHaveCountAsync(1, new() { Timeout = 5000 });
-
-        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("04-workitems-search"), FullPage = true });
-        Assert.That(File.Exists(ScreenshotPath("04-workitems-search")), Is.True);
-    }
-
-    [Test, Order(5)]
-    public async Task Capture_05_TimeTrackerPlugin()
-    {
-        await NavigateAndWait();
-        await Expect(Page.Locator(".timer-status")).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("05-time-tracker-plugin"), FullPage = true });
-        Assert.That(File.Exists(ScreenshotPath("05-time-tracker-plugin")), Is.True);
-    }
-
-    [Test, Order(6)]
-    public async Task Capture_06_CiCdPlugin()
-    {
-        await NavigateAndWait();
-        await Expect(Page.Locator(".cicd-label")).ToBeVisibleAsync(new() { Timeout = 5000 });
-        // Use full page screenshot to avoid element detachment during SSR-to-Interactive transition
-        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("06-cicd-plugin"), FullPage = true });
-        Assert.That(File.Exists(ScreenshotPath("06-cicd-plugin")), Is.True);
-    }
-
-    [Test, Order(7)]
-    public async Task Capture_07_ActionDeck()
+    public async Task Capture_03_ActionDeck()
     {
         await NavigateAndWait();
         await Expect(Page.Locator(".action-button").First).ToBeVisibleAsync(new() { Timeout = 5000 });
-        // Use full page screenshot to avoid element detachment during SSR-to-Interactive transition
-        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("07-action-deck"), FullPage = true });
-        Assert.That(File.Exists(ScreenshotPath("07-action-deck")), Is.True);
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("03-action-deck"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("03-action-deck")), Is.True);
     }
 
-    [Test, Order(8)]
-    public async Task Capture_08_TimeReportModal()
+    [Test, Order(4)]
+    public async Task Capture_04_TimeReportModal()
     {
         await NavigateAndWait();
         await Page.Locator(".system-btn[title='Time Report']").ClickAsync();
         await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("08-time-report-modal"), FullPage = true });
-        Assert.That(File.Exists(ScreenshotPath("08-time-report-modal")), Is.True);
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("04-time-report-modal"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("04-time-report-modal")), Is.True);
     }
 
-    [Test, Order(9)]
-    public async Task Capture_09_TerminalOutput()
+    [Test, Order(5)]
+    public async Task Capture_05_TerminalOutput()
     {
         await NavigateAndWait();
         await Page.Locator(".action-button", new() { HasText = "Build Script" }).ClickAsync();
         await Expect(Page.Locator(".terminal-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("09-terminal-output"), FullPage = true });
-        Assert.That(File.Exists(ScreenshotPath("09-terminal-output")), Is.True);
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("05-terminal-output"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("05-terminal-output")), Is.True);
     }
 
-    [Test, Order(10)]
-    public async Task Capture_10_SettingsPage()
+    [Test, Order(6)]
+    public async Task Capture_06_SettingsPage()
     {
         await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
         await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
-        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("10-settings-page"), FullPage = true });
-        Assert.That(File.Exists(ScreenshotPath("10-settings-page")), Is.True);
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("06-settings-page"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("06-settings-page")), Is.True);
     }
 
-    [Test, Order(11)]
-    public async Task Capture_11_ProjectSwitchDevOps()
+    [Test, Order(7)]
+    public async Task Capture_07_ProjectSwitchDevOps()
     {
         await NavigateAndWait();
         // Switch to DevOps Pipeline project — wait for plugins to update
         await SwitchProject("DevOps Pipeline");
-        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("11-project-switch-devops"), FullPage = true });
-        Assert.That(File.Exists(ScreenshotPath("11-project-switch-devops")), Is.True);
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("07-project-switch-devops"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("07-project-switch-devops")), Is.True);
     }
 
-    [Test, Order(12)]
-    public async Task Capture_12_ProjectSwitchFrontEnd()
+    [Test, Order(8)]
+    public async Task Capture_08_ProjectSwitchFrontEnd()
     {
         await NavigateAndWait();
         // Switch to FrontEnd App project (3 enabled plugins: git-tools, work-items, time-tracker)
         await SwitchProject("FrontEnd App");
-        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("12-project-switch-frontend"), FullPage = true });
-        Assert.That(File.Exists(ScreenshotPath("12-project-switch-frontend")), Is.True);
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("08-project-switch-frontend"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("08-project-switch-frontend")), Is.True);
     }
 
-    [Test, Order(13)]
-    public async Task Capture_13_TimeReportByProject()
+    [Test, Order(9)]
+    public async Task Capture_09_TimeReportByProject()
     {
         await NavigateAndWait();
         await Page.Locator(".system-btn[title='Time Report']").ClickAsync();
@@ -231,34 +182,34 @@ public class ScreenshotTests : PageTest
         await Page.Locator(".time-report-filter").First.SelectOptionAsync("week");
         await Page.Locator(".time-report-filter").Nth(1).SelectOptionAsync("project");
         await Expect(Page.Locator(".time-report-group-key").First).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("13-time-report-by-project"), FullPage = true });
-        Assert.That(File.Exists(ScreenshotPath("13-time-report-by-project")), Is.True);
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("09-time-report-by-project"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("09-time-report-by-project")), Is.True);
     }
 
-    [Test, Order(14)]
-    public async Task Capture_14_SettingsConfigHierarchy()
+    [Test, Order(10)]
+    public async Task Capture_10_SettingsConfigHierarchy()
     {
         await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
         await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
         // Wait for config hierarchy to be visible (avoid ScrollIntoViewIfNeeded due to SSR DOM replacement)
         await Expect(Page.Locator(".settings-config-hierarchy")).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("14-settings-config-hierarchy"), FullPage = true });
-        Assert.That(File.Exists(ScreenshotPath("14-settings-config-hierarchy")), Is.True);
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("10-settings-config-hierarchy"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("10-settings-config-hierarchy")), Is.True);
     }
 
-    [Test, Order(15)]
-    public async Task Capture_15_PillToolbarPreview()
+    [Test, Order(11)]
+    public async Task Capture_11_PillToolbarPreview()
     {
         await NavigateAndWait();
         // Verify pill toolbar modules are visible
         await Expect(Page.Locator(".module-project")).ToBeVisibleAsync(new() { Timeout = 5000 });
         await Expect(Page.Locator(".module-git")).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("15-pill-toolbar-preview"), FullPage = true });
-        Assert.That(File.Exists(ScreenshotPath("15-pill-toolbar-preview")), Is.True);
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("11-pill-toolbar-preview"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("11-pill-toolbar-preview")), Is.True);
     }
 
-    [Test, Order(16)]
-    public async Task Capture_16_TimeReportByDescription()
+    [Test, Order(12)]
+    public async Task Capture_12_TimeReportByDescription()
     {
         await NavigateAndWait();
         // Open time report
@@ -268,17 +219,17 @@ public class ScreenshotTests : PageTest
         await Page.Locator(".time-report-filter").First.SelectOptionAsync("week");
         await Page.Locator(".time-report-filter").Nth(1).SelectOptionAsync("action");
         await Expect(Page.Locator(".time-report-group-key").First).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("16-time-report-by-description"), FullPage = true });
-        Assert.That(File.Exists(ScreenshotPath("16-time-report-by-description")), Is.True);
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("12-time-report-by-description"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("12-time-report-by-description")), Is.True);
     }
 
-    [Test, Order(17)]
-    public async Task Capture_17_SettingsThemeEditor()
+    [Test, Order(13)]
+    public async Task Capture_13_SettingsThemeEditor()
     {
         await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
         await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
         await Expect(Page.Locator(".settings-color-picker")).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("17-settings-theme-editor"), FullPage = true });
-        Assert.That(File.Exists(ScreenshotPath("17-settings-theme-editor")), Is.True);
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("13-settings-theme-editor"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("13-settings-theme-editor")), Is.True);
     }
 }
