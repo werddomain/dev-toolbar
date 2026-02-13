@@ -32,7 +32,7 @@ public class JsonSettingsService : ISettingsService
         var configFile = Path.Combine(_configDir, "config.json");
         if (_fileSystem.FileExists(configFile))
         {
-            var json = _fileSystem.ReadFileAsync(configFile).GetAwaiter().GetResult();
+            var json = _fileSystem.ReadAllTextAsync(configFile).GetAwaiter().GetResult();
             var config = JsonSerializer.Deserialize<AppConfig>(json);
             if (config != null)
             {
@@ -50,7 +50,7 @@ public class JsonSettingsService : ISettingsService
             var localConfig = Path.Combine(project.Path, ".devtoolbar.json");
             if (_fileSystem.FileExists(localConfig))
             {
-                var json = _fileSystem.ReadFileAsync(localConfig).GetAwaiter().GetResult();
+                var json = _fileSystem.ReadAllTextAsync(localConfig).GetAwaiter().GetResult();
                 var local = JsonSerializer.Deserialize<ProjectConfig>(json);
                 if (local != null)
                 {
@@ -103,7 +103,7 @@ public class JsonSettingsService : ISettingsService
             Projects = _projects
         };
         var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
-        await _fileSystem.WriteFileAsync(configFile, json);
+        await _fileSystem.WriteAllTextAsync(configFile, json);
     }
 
     private class AppConfig

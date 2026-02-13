@@ -7,9 +7,9 @@ namespace DevToolbar.Maui.Services;
 /// </summary>
 public class WindowsFileSystemService : IFileSystemService
 {
-    public Task<string> ReadFileAsync(string path) => File.ReadAllTextAsync(path);
+    public Task<string> ReadAllTextAsync(string path) => File.ReadAllTextAsync(path);
 
-    public Task WriteFileAsync(string path, string content) => File.WriteAllTextAsync(path, content);
+    public Task WriteAllTextAsync(string path, string content) => File.WriteAllTextAsync(path, content);
 
     public bool FileExists(string path) => File.Exists(path);
 

@@ -8,7 +8,7 @@ namespace DevToolbar.Maui.Services;
 /// <summary>
 /// Real Windows process service using System.Diagnostics.
 /// </summary>
-public class WindowsProcessService : IProcessService
+public partial class WindowsProcessService : IProcessService
 {
     public async Task<int> StartProcessAsync(string path, string arguments = "")
     {
