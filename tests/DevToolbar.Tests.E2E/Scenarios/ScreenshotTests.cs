@@ -251,4 +251,19 @@ public class ScreenshotTests : PageTest
         await Page.ScreenshotAsync(new() { Path = ScreenshotPath("15-maui-desktop-preview"), FullPage = true });
         Assert.That(File.Exists(ScreenshotPath("15-maui-desktop-preview")), Is.True);
     }
+
+    [Test, Order(16)]
+    public async Task Capture_16_TimeReportByDescription()
+    {
+        await NavigateAndWait();
+        // Open time report
+        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Expect(Page.Locator(".time-report-modal")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        // Switch to week view and group by description
+        await Page.Locator(".time-report-filter").First.SelectOptionAsync("week");
+        await Page.Locator(".time-report-filter").Nth(1).SelectOptionAsync("action");
+        await Expect(Page.Locator(".time-report-group-key").First).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("16-time-report-by-description"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("16-time-report-by-description")), Is.True);
+    }
 }

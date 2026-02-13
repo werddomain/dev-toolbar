@@ -766,4 +766,75 @@ public class ToolbarUiTests : PageTest
         await Expect(Page.Locator(".maui-window")).ToBeVisibleAsync();
         await Expect(Page.Locator(".maui-content .settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
     }
+
+    // ===== US5.3: Idle Notification Tests =====
+
+    [Test]
+    public async Task TimeTracker_ShowsIdleTimeoutInfo()
+    {
+        await NavigateAndWait();
+        // The idle timeout info should be displayed in the time tracker plugin
+        await Expect(Page.Locator(".timer-idle-info")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Expect(Page.Locator(".timer-idle-label")).ToContainTextAsync("Idle timeout:", new() { Timeout = 5000 });
+    }
+
+    // ===== US7.1: CI/CD Polling Tests =====
+
+    [Test]
+    public async Task CiCd_SessionsHaveRealUrls()
+    {
+        await NavigateAndWait();
+        // CI/CD sessions should have real GitHub Actions URLs (not "#")
+        var sessionLinks = Page.Locator(".cicd-session-name");
+        await Expect(sessionLinks.First).ToBeVisibleAsync(new() { Timeout = 5000 });
+        var href = await sessionLinks.First.GetAttributeAsync("href");
+        Assert.That(href, Does.Contain("github.com"), "Session URLs should point to GitHub Actions");
+    }
+
+    [Test]
+    public async Task CiCd_InProgressSessionShowsRunningStatus()
+    {
+        await NavigateAndWait();
+        // At least one session should show "running" status
+        await Expect(Page.Locator(".cicd-session.running")).ToBeVisibleAsync(new() { Timeout = 5000 });
+    }
+
+    // ===== US5.4: Description Grouping Test =====
+
+    [Test]
+    public async Task TimeReport_HasDescriptionGroupingOption()
+    {
+        await NavigateAndWait();
+
+        // Open time report
+        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Expect(Page.Locator(".time-report-modal")).ToBeVisibleAsync(new() { Timeout = 5000 });
+
+        // The grouping dropdown should have a "By Description" option
+        var groupBySelect = Page.Locator(".time-report-filter").Nth(1);
+        await Expect(groupBySelect.Locator("option[value='action']")).ToBeAttachedAsync(new() { Timeout = 5000 });
+    }
+
+    [Test]
+    public async Task TimeReport_ByDescriptionGrouping_ShowsTagHeaders()
+    {
+        await NavigateAndWait();
+
+        // Open time report with "week" period to get sample entries
+        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Expect(Page.Locator(".time-report-modal")).ToBeVisibleAsync(new() { Timeout = 5000 });
+
+        // Switch to week view
+        var periodSelect = Page.Locator(".time-report-filter").First;
+        await periodSelect.SelectOptionAsync("week");
+
+        // Select "By Description" grouping
+        var groupBySelect = Page.Locator(".time-report-filter").Nth(1);
+        await groupBySelect.SelectOptionAsync("action");
+
+        // Should show grouped entries with 🏷 tag headers
+        await Expect(Page.Locator(".time-report-group-key").First).ToBeVisibleAsync(new() { Timeout = 5000 });
+        var firstGroupKey = await Page.Locator(".time-report-group-key").First.TextContentAsync();
+        Assert.That(firstGroupKey, Does.Contain("🏷"), "Description groups should have 🏷 icon prefix");
+    }
 }
