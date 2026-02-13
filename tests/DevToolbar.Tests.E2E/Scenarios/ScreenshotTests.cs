@@ -242,14 +242,14 @@ public class ScreenshotTests : PageTest
     }
 
     [Test, Order(15)]
-    public async Task Capture_15_MauiDesktopPreview()
+    public async Task Capture_15_PillToolbarPreview()
     {
         await NavigateAndWait();
-        // Verify MAUI window chrome is visible
-        await Expect(Page.Locator(".maui-window")).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Expect(Page.Locator(".maui-titlebar")).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("15-maui-desktop-preview"), FullPage = true });
-        Assert.That(File.Exists(ScreenshotPath("15-maui-desktop-preview")), Is.True);
+        // Verify pill toolbar modules are visible
+        await Expect(Page.Locator(".module-project")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Expect(Page.Locator(".module-git")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("15-pill-toolbar-preview"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("15-pill-toolbar-preview")), Is.True);
     }
 
     [Test, Order(16)]

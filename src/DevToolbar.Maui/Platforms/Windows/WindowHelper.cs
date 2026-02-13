@@ -37,7 +37,7 @@ public static class WindowHelper
             presenter.IsMinimizable = false;
         }
 
-        // Set initial size (toolbar-like)
-        appWindow.Resize(new global::Windows.Graphics.SizeInt32(900, 120));
+        // Set initial size — wide floating pill toolbar
+        appWindow.Resize(new global::Windows.Graphics.SizeInt32(1100, 80));
     }
 }

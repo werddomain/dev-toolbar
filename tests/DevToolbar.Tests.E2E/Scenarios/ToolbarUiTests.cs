@@ -724,51 +724,47 @@ public class ToolbarUiTests : PageTest
     // ==============================================================
 
     [Test]
-    public async Task MauiPreview_ShouldShowWindowChrome()
+    public async Task PillDesign_ShouldShowProjectModule()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".maui-window")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".module-project")).ToBeVisibleAsync();
     }
 
     [Test]
-    public async Task MauiPreview_ShouldShowTitleBar()
+    public async Task PillDesign_ShouldShowGitModule()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".maui-titlebar")).ToBeVisibleAsync();
-        await Expect(Page.Locator(".maui-titlebar-text")).ToContainTextAsync("DevToolbar");
+        await Expect(Page.Locator(".module-git")).ToBeVisibleAsync();
     }
 
     [Test]
-    public async Task MauiPreview_ShouldShowWindowButtons()
+    public async Task PillDesign_ShouldShowSystemModule()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".maui-btn-minimize")).ToBeVisibleAsync();
-        await Expect(Page.Locator(".maui-btn-maximize")).ToBeVisibleAsync();
-        await Expect(Page.Locator(".maui-btn-close")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".module-system")).ToBeVisibleAsync();
     }
 
     [Test]
-    public async Task MauiPreview_ShouldShowPreviewHint()
+    public async Task PillDesign_ShouldShowPreviewHint()
     {
         await NavigateAndWait();
         await Expect(Page.Locator(".maui-preview-hint")).ToContainTextAsync("Web preview");
     }
 
     [Test]
-    public async Task MauiPreview_ToolbarRendersInsideWindow()
+    public async Task PillDesign_ToolbarRendersAsPill()
     {
         await NavigateAndWait();
-        // The toolbar-shell must be inside the MAUI window content area
-        await Expect(Page.Locator(".maui-content .toolbar-shell")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".toolbar-preview-frame .toolbar-shell")).ToBeVisibleAsync();
     }
 
     [Test]
-    public async Task MauiPreview_SettingsPageAlsoWrappedInWindow()
+    public async Task PillDesign_SettingsPageRendersInPreview()
     {
         await NavigateAndWait();
         await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
-        await Expect(Page.Locator(".maui-window")).ToBeVisibleAsync();
-        await Expect(Page.Locator(".maui-content .settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+        await Expect(Page.Locator(".toolbar-preview-frame")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
     }
 
     // ===== US5.3: Idle Notification Tests =====
