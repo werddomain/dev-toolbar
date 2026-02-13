@@ -82,6 +82,17 @@ public class ScreenshotTests : PageTest
         await Expect(Page.Locator(".plugin-panel").First).ToBeVisibleAsync(new() { Timeout = 5000 });
     }
 
+    /// <summary>
+    /// Switch to a project by opening the dropdown and clicking the item.
+    /// </summary>
+    private async Task SwitchProject(string projectName)
+    {
+        await Page.Locator(".project-selector-trigger").ClickAsync();
+        await Expect(Page.Locator(".project-dropdown")).ToBeVisibleAsync(new() { Timeout = 3000 });
+        await Page.Locator(".project-dropdown-item", new() { HasText = projectName }).ClickAsync();
+        await Expect(Page.Locator(".project-name")).ToContainTextAsync(projectName, new() { Timeout = 5000 });
+    }
+
     private string ScreenshotPath(string name) => Path.Combine(_screenshotsDir, $"{name}.png");
 
     // ─── Screenshot Capture Tests ───
@@ -165,7 +176,7 @@ public class ScreenshotTests : PageTest
     public async Task Capture_08_TimeReportModal()
     {
         await NavigateAndWait();
-        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Page.Locator(".system-btn[title='Time Report']").ClickAsync();
         await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
         await Page.ScreenshotAsync(new() { Path = ScreenshotPath("08-time-report-modal"), FullPage = true });
         Assert.That(File.Exists(ScreenshotPath("08-time-report-modal")), Is.True);
@@ -195,11 +206,7 @@ public class ScreenshotTests : PageTest
     {
         await NavigateAndWait();
         // Switch to DevOps Pipeline project — wait for plugins to update
-        var select = Page.Locator(".project-selector select");
-        await Expect(select).ToBeVisibleAsync(new() { Timeout = 5000 });
-        await select.SelectOptionAsync("proj-devops");
-        // Wait for footer to reflect the new project name
-        await Expect(Page.Locator(".footer-project")).ToContainTextAsync("DevOps Pipeline", new() { Timeout = 5000 });
+        await SwitchProject("DevOps Pipeline");
         await Page.ScreenshotAsync(new() { Path = ScreenshotPath("11-project-switch-devops"), FullPage = true });
         Assert.That(File.Exists(ScreenshotPath("11-project-switch-devops")), Is.True);
     }
@@ -209,9 +216,7 @@ public class ScreenshotTests : PageTest
     {
         await NavigateAndWait();
         // Switch to FrontEnd App project (3 enabled plugins: git-tools, work-items, time-tracker)
-        await Page.Locator(".project-selector select").SelectOptionAsync("proj-frontend");
-        // Wait for footer to reflect the new project name
-        await Expect(Page.Locator(".footer-project")).ToContainTextAsync("FrontEnd App", new() { Timeout = 5000 });
+        await SwitchProject("FrontEnd App");
         await Page.ScreenshotAsync(new() { Path = ScreenshotPath("12-project-switch-frontend"), FullPage = true });
         Assert.That(File.Exists(ScreenshotPath("12-project-switch-frontend")), Is.True);
     }
@@ -220,7 +225,7 @@ public class ScreenshotTests : PageTest
     public async Task Capture_13_TimeReportByProject()
     {
         await NavigateAndWait();
-        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Page.Locator(".system-btn[title='Time Report']").ClickAsync();
         await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
         // Switch to "This Week" and "By Project"
         await Page.Locator(".time-report-filter").First.SelectOptionAsync("week");
@@ -257,7 +262,7 @@ public class ScreenshotTests : PageTest
     {
         await NavigateAndWait();
         // Open time report
-        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Page.Locator(".system-btn[title='Time Report']").ClickAsync();
         await Expect(Page.Locator(".time-report-modal")).ToBeVisibleAsync(new() { Timeout = 5000 });
         // Switch to week view and group by description
         await Page.Locator(".time-report-filter").First.SelectOptionAsync("week");

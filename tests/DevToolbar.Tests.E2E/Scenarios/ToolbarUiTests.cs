@@ -76,17 +76,25 @@ public class ToolbarUiTests : PageTest
         await Page.GotoAsync(BaseUrl, new() { WaitUntil = WaitUntilState.Load });
         // The SSR-rendered content includes .toolbar-shell immediately
         await Expect(Page.Locator(".toolbar-shell")).ToBeVisibleAsync(new() { Timeout = 30000 });
-        // Wait for interactive mode by checking that the project selector is functional
-        await Expect(Page.Locator(".project-selector select")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        // Wait for interactive mode by checking that the project selector trigger is functional
+        await Expect(Page.Locator(".project-selector-trigger")).ToBeVisibleAsync(new() { Timeout = 5000 });
         // Ensure MyWebAPI is the active project (may have been changed by other test classes)
-        var select = Page.Locator(".project-selector select");
-        var currentValue = await select.InputValueAsync();
-        if (currentValue != "proj-webapi")
+        var projectName = await Page.Locator(".project-name").TextContentAsync();
+        if (projectName?.Trim() != "MyWebAPI")
         {
-            await select.SelectOptionAsync("proj-webapi");
-            // Wait for footer to reflect the change
-            await Expect(Page.Locator(".footer-project")).ToContainTextAsync("MyWebAPI", new() { Timeout = 5000 });
+            await SwitchProject("MyWebAPI");
         }
+    }
+
+    /// <summary>
+    /// Switch to a project by opening the dropdown and clicking the item.
+    /// </summary>
+    private async Task SwitchProject(string projectName)
+    {
+        await Page.Locator(".project-selector-trigger").ClickAsync();
+        await Expect(Page.Locator(".project-dropdown")).ToBeVisibleAsync(new() { Timeout = 3000 });
+        await Page.Locator(".project-dropdown-item", new() { HasText = projectName }).ClickAsync();
+        await Expect(Page.Locator(".project-name")).ToContainTextAsync(projectName, new() { Timeout = 5000 });
     }
 
     [Test]
@@ -97,24 +105,27 @@ public class ToolbarUiTests : PageTest
     }
 
     [Test]
-    public async Task Header_ShouldDisplayBrandName()
+    public async Task ToolbarShell_HasProjectModule()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".brand-title")).ToHaveTextAsync("DevToolbar");
+        await Expect(Page.Locator(".module-project")).ToBeVisibleAsync();
     }
 
     [Test]
-    public async Task ProjectSelector_ShouldHaveThreeOptions()
+    public async Task ProjectSelector_ShouldHaveThreeProjects()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".project-selector select option")).ToHaveCountAsync(3);
+        // Active project is shown in the trigger; open dropdown to see the other 2
+        await Page.Locator(".project-selector-trigger").ClickAsync();
+        await Expect(Page.Locator(".project-dropdown")).ToBeVisibleAsync(new() { Timeout = 3000 });
+        await Expect(Page.Locator(".project-dropdown-item")).ToHaveCountAsync(2);
     }
 
     [Test]
     public async Task ProjectSelector_DefaultShouldBeMyWebAPI()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".project-selector select")).ToHaveValueAsync("proj-webapi");
+        await Expect(Page.Locator(".project-name")).ToContainTextAsync("MyWebAPI");
     }
 
     [Test]
@@ -237,7 +248,7 @@ public class ToolbarUiTests : PageTest
     public async Task SettingsLink_ShouldBeVisible()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".toolbar-settings-btn")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".system-settings")).ToBeVisibleAsync();
     }
 
     [Test]
@@ -309,14 +320,14 @@ public class ToolbarUiTests : PageTest
     public async Task TimeReportButton_ShouldBeVisible()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".toolbar-report-btn")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".system-btn[title='Time Report']")).ToBeVisibleAsync();
     }
 
     [Test]
     public async Task TimeReport_ShouldOpenOnClick()
     {
         await NavigateAndWait();
-        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Page.Locator(".system-btn[title='Time Report']").ClickAsync();
         await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
         await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Time Report" })).ToBeVisibleAsync();
     }
@@ -325,7 +336,7 @@ public class ToolbarUiTests : PageTest
     public async Task TimeReport_ShouldHavePeriodFilter()
     {
         await NavigateAndWait();
-        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Page.Locator(".system-btn[title='Time Report']").ClickAsync();
         await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
         await Expect(Page.Locator(".time-report-filter").First).ToBeVisibleAsync();
     }
@@ -334,7 +345,7 @@ public class ToolbarUiTests : PageTest
     public async Task TimeReport_ShouldHaveExportButton()
     {
         await NavigateAndWait();
-        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Page.Locator(".system-btn[title='Time Report']").ClickAsync();
         await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
         await Expect(Page.Locator(".time-report-export")).ToBeVisibleAsync();
         await Expect(Page.Locator(".time-report-export")).ToContainTextAsync("Export CSV");
@@ -392,14 +403,11 @@ public class ToolbarUiTests : PageTest
         await Expect(Page.Locator(".plugin-panel")).ToHaveCountAsync(4);
 
         // Switch to DevOps Pipeline (has only git-tools, github-agents)
-        await Page.Locator(".project-selector select").SelectOptionAsync("proj-devops");
-        // Wait for footer to confirm project switch before checking plugins
-        await Expect(Page.Locator(".footer-project")).ToContainTextAsync("DevOps Pipeline", new() { Timeout = 5000 });
+        await SwitchProject("DevOps Pipeline");
         await Expect(Page.Locator(".plugin-panel")).ToHaveCountAsync(2, new() { Timeout = 5000 });
 
         // Switch back to MyWebAPI
-        await Page.Locator(".project-selector select").SelectOptionAsync("proj-webapi");
-        await Expect(Page.Locator(".footer-project")).ToContainTextAsync("MyWebAPI", new() { Timeout = 5000 });
+        await SwitchProject("MyWebAPI");
         await Expect(Page.Locator(".plugin-panel")).ToHaveCountAsync(4, new() { Timeout = 5000 });
     }
 
@@ -412,37 +420,36 @@ public class ToolbarUiTests : PageTest
         await Expect(deckButtons).ToHaveCountAsync(4);
 
         // Switch to FrontEnd App (has 3 actions: 1 smart Browser + 2 regular)
-        await Page.Locator(".project-selector select").SelectOptionAsync("proj-frontend");
+        await SwitchProject("FrontEnd App");
         await Expect(deckButtons).ToHaveCountAsync(3, new() { Timeout = 5000 });
     }
 
-    // --- Status Bar Footer Tests ---
+    // --- Project Name Display Tests ---
 
     [Test]
-    public async Task Footer_ShouldDisplayProjectName()
+    public async Task ProjectName_ShouldDisplayInSelector()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".toolbar-footer")).ToBeVisibleAsync();
-        await Expect(Page.Locator(".footer-project")).ToContainTextAsync("MyWebAPI");
+        await Expect(Page.Locator(".project-selector-trigger")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".project-name")).ToContainTextAsync("MyWebAPI");
     }
 
     [Test]
-    public async Task Footer_ShouldShowPluginCount()
+    public async Task SystemModule_ShouldShowTimerDisplay()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".footer-plugin-count")).ToContainTextAsync("4 plugins");
+        await Expect(Page.Locator(".system-timer-display")).ToBeVisibleAsync();
     }
 
     [Test]
-    public async Task Footer_ShouldUpdateOnProjectSwitch()
+    public async Task ProjectName_ShouldUpdateOnProjectSwitch()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".footer-project")).ToContainTextAsync("MyWebAPI");
+        await Expect(Page.Locator(".project-name")).ToContainTextAsync("MyWebAPI");
 
-        // Switch to DevOps Pipeline (2 plugins)
-        await Page.Locator(".project-selector select").SelectOptionAsync("proj-devops");
-        await Expect(Page.Locator(".footer-project")).ToContainTextAsync("DevOps Pipeline", new() { Timeout = 5000 });
-        await Expect(Page.Locator(".footer-plugin-count")).ToContainTextAsync("2 plugins", new() { Timeout = 5000 });
+        // Switch to DevOps Pipeline
+        await SwitchProject("DevOps Pipeline");
+        await Expect(Page.Locator(".project-name")).ToContainTextAsync("DevOps Pipeline", new() { Timeout = 5000 });
     }
 
     // --- CSV Export Tests ---
@@ -451,7 +458,7 @@ public class ToolbarUiTests : PageTest
     public async Task TimeReport_ExportButton_ShouldBeClickable()
     {
         await NavigateAndWait();
-        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Page.Locator(".system-btn[title='Time Report']").ClickAsync();
         await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
 
         var exportBtn = Page.Locator(".time-report-export");
@@ -555,7 +562,7 @@ public class ToolbarUiTests : PageTest
         await Expect(Page.Locator(".git-branch")).ToContainTextAsync("develop");
 
         // Switch to DevOps Pipeline (DefaultBranch = "release/1.0")
-        await Page.Locator(".project-selector select").SelectOptionAsync("proj-devops");
+        await SwitchProject("DevOps Pipeline");
         await Expect(Page.Locator(".git-branch")).ToContainTextAsync("release/1.0", new() { Timeout = 5000 });
     }
 
@@ -565,7 +572,7 @@ public class ToolbarUiTests : PageTest
     public async Task TimeReport_ShouldHaveGroupByFilter()
     {
         await NavigateAndWait();
-        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Page.Locator(".system-btn[title='Time Report']").ClickAsync();
         await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
         // Should have two filters: period and groupBy
         await Expect(Page.Locator(".time-report-filter")).ToHaveCountAsync(2);
@@ -646,7 +653,7 @@ public class ToolbarUiTests : PageTest
     public async Task TimeReport_ShouldHaveByProjectGrouping()
     {
         await NavigateAndWait();
-        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Page.Locator(".system-btn[title='Time Report']").ClickAsync();
         await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
 
         // The groupBy filter should have "By Project" option
@@ -658,7 +665,7 @@ public class ToolbarUiTests : PageTest
     public async Task TimeReport_ShouldShowPrePopulatedEntries()
     {
         await NavigateAndWait();
-        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Page.Locator(".system-btn[title='Time Report']").ClickAsync();
         await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
 
         // Should show entries with a non-zero total
@@ -669,7 +676,7 @@ public class ToolbarUiTests : PageTest
     public async Task TimeReport_ByProjectGrouping_ShouldShowProjectNames()
     {
         await NavigateAndWait();
-        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Page.Locator(".system-btn[title='Time Report']").ClickAsync();
         await Expect(Page.Locator(".time-report-overlay.visible")).ToBeVisibleAsync(new() { Timeout = 5000 });
 
         // Switch to "This Week" to get cross-project data
@@ -807,7 +814,7 @@ public class ToolbarUiTests : PageTest
         await NavigateAndWait();
 
         // Open time report
-        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Page.Locator(".system-btn[title='Time Report']").ClickAsync();
         await Expect(Page.Locator(".time-report-modal")).ToBeVisibleAsync(new() { Timeout = 5000 });
 
         // The grouping dropdown should have a "By Description" option
@@ -821,7 +828,7 @@ public class ToolbarUiTests : PageTest
         await NavigateAndWait();
 
         // Open time report with "week" period to get sample entries
-        await Page.Locator(".toolbar-report-btn").ClickAsync();
+        await Page.Locator(".system-btn[title='Time Report']").ClickAsync();
         await Expect(Page.Locator(".time-report-modal")).ToBeVisibleAsync(new() { Timeout = 5000 });
 
         // Switch to week view
