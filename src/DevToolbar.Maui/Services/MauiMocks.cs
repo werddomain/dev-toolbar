@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using DevToolbar.Core.Interfaces;
 using DevToolbar.Core.Models;
 
@@ -30,6 +29,12 @@ public class MockTimeTrackingService : ITimeTrackingService
     private readonly List<TimeEntry> _entries = new();
 
     public event Action? OnTrackingChanged;
+    public event Action? OnIdleDetected;
+
+    public TimeSpan IdleTimeout => TimeSpan.FromMinutes(15);
+    public bool IsIdlePaused => false;
+
+    public void ReportActivity() { /* no-op in mock */ }
 
     public TimeEntry Start(string projectId, string? workItemId = null)
     {
@@ -74,6 +79,11 @@ public class MockCiCdService : ICiCdService
 {
     private readonly List<CiCdSession> _sessions = new();
     public event Action? OnSessionsUpdated;
+
+    public TimeSpan PollingInterval => TimeSpan.FromSeconds(30);
+
+    public Task StartPollingAsync(string projectId, CancellationToken cancellationToken = default) =>
+        Task.CompletedTask;
 
     public Task<IReadOnlyList<CiCdSession>> GetSessionsAsync(string projectId) =>
         Task.FromResult<IReadOnlyList<CiCdSession>>(_sessions.AsReadOnly());

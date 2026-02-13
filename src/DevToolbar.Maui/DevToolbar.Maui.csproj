@@ -20,18 +20,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Blazor WebView -->
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DevToolbar.Core\DevToolbar.Core.csproj" />
     <ProjectReference Include="..\DevToolbar.UI\DevToolbar.UI.csproj" />
     <ProjectReference Include="..\DevToolbar.Plugins\DevToolbar.Plugins.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="Microsoft.Maui.Controls" Version="10.0.40" />
   </ItemGroup>
 
 </Project>
