@@ -74,12 +74,12 @@ body {
     position: relative;
     color: #fff;
     flex-shrink: 0;
-    box-shadow: 0 2px 10px color-mix(in srgb, var(--project-color) 40%, transparent);
+    box-shadow: 0 2px 10px rgba(0, 120, 212, 0.3);
     transition: box-shadow 0.3s ease;
 }
 
 .module-project:hover {
-    box-shadow: 0 4px 16px color-mix(in srgb, var(--project-color) 50%, transparent);
+    box-shadow: 0 4px 16px rgba(0, 120, 212, 0.4);
 }
 
 /* Zone 2: Git Module (z-index: 10, overlaps under project) */
@@ -864,7 +864,7 @@ body {
 
 .smart-process-button.focused {
     border-color: var(--accent-color);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 30%, transparent);
+    box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.3);
 }
 
 .smart-process-active-badge {

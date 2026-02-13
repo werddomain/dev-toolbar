@@ -170,10 +170,6 @@
         ThemeService.OnThemeChanged -= OnThemeChanged;
     }
 
-    private static string FormatTime(TimeSpan ts)
-    {
-        if (ts.TotalHours >= 1)
-            return $"{(int)ts.TotalHours:D2}:{ts.Minutes:D2}";
-        return $"{ts.Minutes:D2}:{ts.Seconds:D2}";
-    }
+    private static string FormatTime(TimeSpan ts) =>
+        $"{(int)ts.TotalHours:D2}:{ts.Minutes:D2}";
 }
