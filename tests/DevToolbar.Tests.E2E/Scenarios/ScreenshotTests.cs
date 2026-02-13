@@ -266,4 +266,14 @@ public class ScreenshotTests : PageTest
         await Page.ScreenshotAsync(new() { Path = ScreenshotPath("16-time-report-by-description"), FullPage = true });
         Assert.That(File.Exists(ScreenshotPath("16-time-report-by-description")), Is.True);
     }
+
+    [Test, Order(17)]
+    public async Task Capture_17_SettingsThemeEditor()
+    {
+        await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+        await Expect(Page.Locator(".settings-color-picker")).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Page.ScreenshotAsync(new() { Path = ScreenshotPath("17-settings-theme-editor"), FullPage = true });
+        Assert.That(File.Exists(ScreenshotPath("17-settings-theme-editor")), Is.True);
+    }
 }

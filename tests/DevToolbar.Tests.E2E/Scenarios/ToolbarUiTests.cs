@@ -129,14 +129,17 @@ public class ToolbarUiTests : PageTest
     public async Task ActionDeck_ShouldDisplayFourButtons()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".action-button")).ToHaveCountAsync(4);
+        // MyWebAPI has 4 actions: 1 SmartProcessButton (VS) + 3 regular action buttons
+        var totalButtons = Page.Locator(".action-deck").Locator("button");
+        await Expect(totalButtons).ToHaveCountAsync(4);
     }
 
     [Test]
     public async Task ActionDeck_ShouldShowVisualStudioButton()
     {
         await NavigateAndWait();
-        await Expect(Page.Locator(".action-button", new() { HasText = "Visual Studio" })).ToBeVisibleAsync();
+        // Visual Studio has WindowTitleRegex, so it renders as SmartProcessButton
+        await Expect(Page.Locator(".smart-process-btn", new() { HasText = "Visual Studio" })).ToBeVisibleAsync();
     }
 
     [Test]
@@ -404,12 +407,13 @@ public class ToolbarUiTests : PageTest
     public async Task ProjectSwitch_ShouldUpdateActions()
     {
         await NavigateAndWait();
-        // Default MyWebAPI has 4 actions
-        await Expect(Page.Locator(".action-button")).ToHaveCountAsync(4);
+        // Default MyWebAPI has 4 actions (1 smart + 3 regular)
+        var deckButtons = Page.Locator(".action-deck").Locator("button");
+        await Expect(deckButtons).ToHaveCountAsync(4);
 
-        // Switch to FrontEnd App (has 3 actions)
+        // Switch to FrontEnd App (has 3 actions: 1 smart Browser + 2 regular)
         await Page.Locator(".project-selector select").SelectOptionAsync("proj-frontend");
-        await Expect(Page.Locator(".action-button")).ToHaveCountAsync(3, new() { Timeout = 5000 });
+        await Expect(deckButtons).ToHaveCountAsync(3, new() { Timeout = 5000 });
     }
 
     // --- Status Bar Footer Tests ---
@@ -836,5 +840,86 @@ public class ToolbarUiTests : PageTest
         await Expect(Page.Locator(".time-report-group-key").First).ToBeVisibleAsync(new() { Timeout = 5000 });
         var firstGroupKey = await Page.Locator(".time-report-group-key").First.TextContentAsync();
         Assert.That(firstGroupKey, Does.Contain("🏷"), "Description groups should have 🏷 icon prefix");
+    }
+
+    // ============================================================================
+    // US4.2: SmartProcessButton in ActionDeck
+    // ============================================================================
+
+    [Test]
+    public async Task SmartProcessButton_RendersForActionsWithWindowTitleRegex()
+    {
+        await NavigateAndWait();
+
+        // Visual Studio has WindowTitleRegex, should render as SmartProcessButton
+        var smartBtn = Page.Locator(".smart-process-btn");
+        await Expect(smartBtn.First).ToBeVisibleAsync(new() { Timeout = 5000 });
+        var text = await smartBtn.First.TextContentAsync();
+        Assert.That(text, Does.Contain("Visual Studio"), "SmartProcessButton should show Visual Studio");
+    }
+
+    [Test]
+    public async Task SmartProcessButton_RegularActionsStillRenderAsButtons()
+    {
+        await NavigateAndWait();
+
+        // Postman has no WindowTitleRegex, should render as regular button
+        var regularBtn = Page.Locator(".action-button:has-text('Postman')");
+        await Expect(regularBtn).ToBeVisibleAsync(new() { Timeout = 5000 });
+    }
+
+    // ============================================================================
+    // US3.2: Theme Editor in Settings
+    // ============================================================================
+
+    [Test]
+    public async Task Settings_ThemeEditor_ColorPickerVisible()
+    {
+        await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+
+        // Color picker should be visible
+        var colorPicker = Page.Locator(".settings-color-picker");
+        await Expect(colorPicker).ToBeVisibleAsync(new() { Timeout = 5000 });
+    }
+
+    [Test]
+    public async Task Settings_ThemeEditor_FontSelectVisible()
+    {
+        await Page.GotoAsync($"{BaseUrl}/settings", new() { WaitUntil = WaitUntilState.Load });
+        await Expect(Page.Locator(".settings-page")).ToBeVisibleAsync(new() { Timeout = 30000 });
+
+        // Font family select should be visible with multiple options
+        var fontSelect = Page.Locator(".settings-font-select");
+        await Expect(fontSelect).ToBeVisibleAsync(new() { Timeout = 5000 });
+
+        // Should have multiple font options
+        var options = fontSelect.Locator("option");
+        var count = await options.CountAsync();
+        Assert.That(count, Is.GreaterThanOrEqualTo(4), "Font selector should have at least 4 font options");
+    }
+
+    // ============================================================================
+    // US5.1: Git Sync (Pull/Push buttons exist and are clickable)
+    // ============================================================================
+
+    [Test]
+    public async Task GitPlugin_PullPushButtons_AreVisible()
+    {
+        await NavigateAndWait();
+
+        // Both Pull and Push buttons should be visible and enabled
+        var pullBtn = Page.Locator(".git-btn-pull");
+        var pushBtn = Page.Locator(".git-btn-push");
+        await Expect(pullBtn).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Expect(pushBtn).ToBeVisibleAsync(new() { Timeout = 5000 });
+        await Expect(pullBtn).ToBeEnabledAsync(new() { Timeout = 5000 });
+        await Expect(pushBtn).ToBeEnabledAsync(new() { Timeout = 5000 });
+
+        // Verify button text
+        var pullText = await pullBtn.TextContentAsync();
+        var pushText = await pushBtn.TextContentAsync();
+        Assert.That(pullText, Does.Contain("Pull"), "Pull button should say Pull");
+        Assert.That(pushText, Does.Contain("Push"), "Push button should say Push");
     }
 }

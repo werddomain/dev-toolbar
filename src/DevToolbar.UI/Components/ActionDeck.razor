@@ -6,10 +6,17 @@
     {
         @foreach (var action in Actions)
         {
-            <button class="action-button" @onclick="() => OnActionClick(action)" title="@action.Label">
-                <span class="action-icon">@action.Icon</span>
-                <span class="action-label">@action.Label</span>
-            </button>
+            @if (action.ActionType == ActionType.Process && !string.IsNullOrEmpty(action.WindowTitleRegex))
+            {
+                <SmartProcessButton Action="@action" />
+            }
+            else
+            {
+                <button class="action-button" @onclick="() => OnActionClick(action)" title="@action.Label">
+                    <span class="action-icon">@action.Icon</span>
+                    <span class="action-label">@action.Label</span>
+                </button>
+            }
         }
     }
 </div>

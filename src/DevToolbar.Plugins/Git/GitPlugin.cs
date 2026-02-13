@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 public class GitPlugin : IPlugin
 {
     private readonly IProcessService _processService;
+    private readonly INotificationService _notificationService;
 
     public string UniqueId => "git-tools";
     public string Name => "Git Tools";
@@ -22,9 +23,10 @@ public class GitPlugin : IPlugin
     private bool _isDirty = false;
     private string _syncStatus = string.Empty;
 
-    public GitPlugin(IProcessService processService)
+    public GitPlugin(IProcessService processService, INotificationService notificationService)
     {
         _processService = processService;
+        _notificationService = notificationService;
     }
 
     public Task OnProjectChangedAsync(PluginContext context)
@@ -71,10 +73,12 @@ public class GitPlugin : IPlugin
                 OnStateChanged?.Invoke();
                 await _processService.StartProcessAsync("git", "pull");
                 _syncStatus = "✓ Pull complete";
+                _notificationService.ShowSuccess("Pull completed successfully", "Git Sync");
             }
             catch (Exception ex)
             {
                 _syncStatus = $"✗ Pull failed: {ex.Message}";
+                _notificationService.ShowError($"Pull failed: {ex.Message}", "Git Sync");
             }
             OnStateChanged?.Invoke();
         }));
@@ -92,10 +96,12 @@ public class GitPlugin : IPlugin
                 OnStateChanged?.Invoke();
                 await _processService.StartProcessAsync("git", "push");
                 _syncStatus = "✓ Push complete";
+                _notificationService.ShowSuccess("Push completed successfully", "Git Sync");
             }
             catch (Exception ex)
             {
                 _syncStatus = $"✗ Push failed: {ex.Message}";
+                _notificationService.ShowError($"Push failed: {ex.Message}", "Git Sync");
             }
             OnStateChanged?.Invoke();
         }));
