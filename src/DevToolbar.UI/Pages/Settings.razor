@@ -1,6 +1,7 @@
 @page "/settings"
 @using DevToolbar.Core.Interfaces
 @using DevToolbar.Core.Models
+@using DevToolbar.UI.Services
 @inject ISettingsService SettingsService
 @inject IPluginLoader PluginLoader
 
@@ -47,13 +48,23 @@
                 <div class="settings-field">
                     <label>Accent Color</label>
                     <div class="settings-color-preview">
-                        <span class="color-swatch" style="background-color: @_activeProject.Theme.AccentColor"></span>
+                        <input type="color" value="@_activeProject.Theme.AccentColor"
+                               class="settings-color-picker"
+                               @onchange="@(e => UpdateAccentColor(e.Value?.ToString() ?? "#0d6efd"))" />
                         <span class="settings-value">@_activeProject.Theme.AccentColor</span>
                     </div>
                 </div>
                 <div class="settings-field">
                     <label>Font Family</label>
-                    <span class="settings-value">@_activeProject.Theme.FontFamily</span>
+                    <select class="settings-font-select" value="@_activeProject.Theme.FontFamily"
+                            @onchange="@(e => UpdateFontFamily(e.Value?.ToString() ?? "Segoe UI"))">
+                        <option value="Segoe UI">Segoe UI</option>
+                        <option value="Cascadia Code">Cascadia Code</option>
+                        <option value="Consolas">Consolas</option>
+                        <option value="JetBrains Mono">JetBrains Mono</option>
+                        <option value="Fira Code">Fira Code</option>
+                        <option value="Inter">Inter</option>
+                    </select>
                 </div>
             </section>
 
@@ -155,6 +166,9 @@
     private IReadOnlyList<ProjectConfig>? _projects;
     private IReadOnlyList<IPlugin> _allPlugins = Array.Empty<IPlugin>();
 
+    [Inject]
+    private ThemeService ThemeService { get; set; } = default!;
+
     protected override async Task OnInitializedAsync()
     {
         _activeProject = SettingsService.GetActiveProject();
@@ -175,6 +189,20 @@
             _activeProject.EnabledPlugins.Remove(pluginId);
         }
         // Note: Changes are applied in-memory. In MAUI, JsonSettingsService persists to disk.
+    }
+
+    private void UpdateAccentColor(string color)
+    {
+        if (_activeProject == null) return;
+        _activeProject.Theme.AccentColor = color;
+        ThemeService.SetTheme(_activeProject.Theme);
+    }
+
+    private void UpdateFontFamily(string fontFamily)
+    {
+        if (_activeProject == null) return;
+        _activeProject.Theme.FontFamily = fontFamily;
+        ThemeService.SetTheme(_activeProject.Theme);
     }
 
     private async Task SwitchProject(string projectId)

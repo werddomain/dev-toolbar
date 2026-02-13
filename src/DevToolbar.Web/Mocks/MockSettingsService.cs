@@ -29,7 +29,7 @@ public class MockSettingsService : ISettingsService
                 EnabledPlugins = new List<string> { "git-tools", "work-items", "time-tracker", "github-agents" },
                 Actions = new List<ActionConfig>
                 {
-                    new ActionConfig { Label = "Visual Studio", Icon = "🟣", ProcessPath = "devenv.exe" },
+                    new ActionConfig { Label = "Visual Studio", Icon = "🟣", ProcessPath = "devenv.exe", WindowTitleRegex = ".*Visual Studio.*" },
                     new ActionConfig { Label = "Postman", Icon = "🟠", ProcessPath = "postman.exe" },
                     new ActionConfig { Label = "Terminal", Icon = "⬛", ProcessPath = "wt.exe" },
                     new ActionConfig { Label = "Build Script", Icon = "🔨", ProcessPath = "build.ps1", ActionType = ActionType.Script, Interpreter = "pwsh" }
