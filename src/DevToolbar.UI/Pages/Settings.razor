@@ -4,6 +4,8 @@
 @using DevToolbar.UI.Services
 @inject ISettingsService SettingsService
 @inject IPluginLoader PluginLoader
+@inject IGlobalSettingsService GlobalSettingsService
+@inject IWindowService WindowService
 
 <PageTitle>DevToolbar - Settings</PageTitle>
 
@@ -65,6 +67,70 @@
                         <option value="Fira Code">Fira Code</option>
                         <option value="Inter">Inter</option>
                     </select>
+                </div>
+            </section>
+
+            @* ── Toolbar Behavior Settings ── *@
+            <section class="settings-section settings-toolbar-section">
+                <h3>🖥️ Toolbar Behavior</h3>
+
+                <div class="settings-field">
+                    <label>Mode</label>
+                    <div class="settings-radio-group">
+                        @foreach (var behavior in Enum.GetValues<ToolbarBehavior>())
+                        {
+                            <label class="settings-radio-item">
+                                <input type="radio" name="toolbarBehavior"
+                                       value="@behavior"
+                                       checked="@(_globalSettings.ToolbarBehavior == behavior)"
+                                       @onchange="@(() => UpdateToolbarBehavior(behavior))" />
+                                <span class="radio-label">@GetBehaviorLabel(behavior)</span>
+                                <span class="radio-desc">@GetBehaviorDescription(behavior)</span>
+                            </label>
+                        }
+                    </div>
+                </div>
+
+                <div class="settings-field">
+                    <label>Target Monitor</label>
+                    <select class="settings-monitor-select"
+                            value="@_globalSettings.TargetMonitorIndex"
+                            @onchange="@(e => UpdateTargetMonitor(int.TryParse(e.Value?.ToString(), out var v) ? v : 0))">
+                        @foreach (var monitor in _monitors)
+                        {
+                            <option value="@monitor.Index">@monitor.DisplayLabel (@(monitor.Bounds.Width)×@(monitor.Bounds.Height))</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="settings-field">
+                    <label>Toolbar Height (px)</label>
+                    <input type="number" min="32" max="120"
+                           value="@_globalSettings.ToolbarHeight"
+                           class="settings-monitor-select"
+                           @onchange="@(e => UpdateToolbarHeight(int.TryParse(e.Value?.ToString(), out var v) ? v : 56))" />
+                </div>
+
+                <div class="settings-plugin-row">
+                    <label class="settings-toggle">
+                        <input type="checkbox"
+                               checked="@_globalSettings.TaskbarReplacementMode"
+                               class="settings-plugin-checkbox"
+                               @onchange="@(e => UpdateTaskbarReplacement((bool)(e.Value ?? false)))" />
+                        <span class="settings-toggle-slider"></span>
+                    </label>
+                    <span class="settings-plugin-name">Taskbar Replacement Mode</span>
+                </div>
+
+                <div class="settings-plugin-row">
+                    <label class="settings-toggle">
+                        <input type="checkbox"
+                               checked="@_globalSettings.ShowActiveWindows"
+                               class="settings-plugin-checkbox"
+                               @onchange="@(e => UpdateShowActiveWindows((bool)(e.Value ?? false)))" />
+                        <span class="settings-toggle-slider"></span>
+                    </label>
+                    <span class="settings-plugin-name">Show Active Windows</span>
                 </div>
             </section>
 
@@ -165,6 +231,8 @@
     private ProjectConfig? _activeProject;
     private IReadOnlyList<ProjectConfig>? _projects;
     private IReadOnlyList<IPlugin> _allPlugins = Array.Empty<IPlugin>();
+    private GlobalSettings _globalSettings = new();
+    private List<MonitorInfo> _monitors = new();
 
     [Inject]
     private ThemeService ThemeService { get; set; } = default!;
@@ -174,6 +242,10 @@
         _activeProject = SettingsService.GetActiveProject();
         _projects = await SettingsService.GetProjectsAsync();
         _allPlugins = PluginLoader.GetPlugins();
+
+        // Load global settings and monitor list
+        _globalSettings = GlobalSettingsService.Current;
+        _monitors = WindowService.GetMonitors();
     }
 
     private void TogglePlugin(string pluginId, bool enabled)
@@ -212,4 +284,55 @@
         await SettingsService.SetActiveProjectAsync(projectId);
         _activeProject = SettingsService.GetActiveProject();
     }
+
+    // --- Toolbar Behavior settings ---
+
+    private async Task UpdateToolbarBehavior(ToolbarBehavior behavior)
+    {
+        await GlobalSettingsService.UpdateAsync(s => s.ToolbarBehavior = behavior);
+        _globalSettings = GlobalSettingsService.Current;
+    }
+
+    private async Task UpdateTargetMonitor(int monitorIndex)
+    {
+        await GlobalSettingsService.UpdateAsync(s => s.TargetMonitorIndex = monitorIndex);
+        _globalSettings = GlobalSettingsService.Current;
+    }
+
+    private async Task UpdateToolbarHeight(int height)
+    {
+        height = Math.Clamp(height, 32, 120);
+        await GlobalSettingsService.UpdateAsync(s => s.ToolbarHeight = height);
+        _globalSettings = GlobalSettingsService.Current;
+    }
+
+    private async Task UpdateTaskbarReplacement(bool enabled)
+    {
+        await GlobalSettingsService.UpdateAsync(s => s.TaskbarReplacementMode = enabled);
+        _globalSettings = GlobalSettingsService.Current;
+    }
+
+    private async Task UpdateShowActiveWindows(bool enabled)
+    {
+        await GlobalSettingsService.UpdateAsync(s => s.ShowActiveWindows = enabled);
+        _globalSettings = GlobalSettingsService.Current;
+    }
+
+    private static string GetBehaviorLabel(ToolbarBehavior behavior) => behavior switch
+    {
+        ToolbarBehavior.DockedTop => "Docked Top",
+        ToolbarBehavior.DockedBottom => "Docked Bottom",
+        ToolbarBehavior.Floating => "Floating",
+        ToolbarBehavior.Overlay => "Overlay",
+        _ => behavior.ToString()
+    };
+
+    private static string GetBehaviorDescription(ToolbarBehavior behavior) => behavior switch
+    {
+        ToolbarBehavior.DockedTop => "Anchored at top, reserves screen space",
+        ToolbarBehavior.DockedBottom => "Anchored at bottom, reserves screen space",
+        ToolbarBehavior.Floating => "Free-floating window, movable",
+        ToolbarBehavior.Overlay => "Always on top, no space reserved",
+        _ => string.Empty
+    };
 }

@@ -1,0 +1,48 @@
+@using DevToolbar.Core.Interfaces
+
+@inject IWindowRegionService RegionService
+
+<div class="test-dropdown-wrapper" style="position: relative;">
+    <button class="system-btn" @onclick="ToggleDropdown" title="Test Dropdown">🧪</button>
+
+    @if (_isOpen)
+    {
+        <div class="test-dropdown-panel">
+            <div class="test-dropdown-header">
+                <strong>Test Dropdown</strong>
+                <button class="test-dropdown-close" @onclick="CloseDropdown">✕</button>
+            </div>
+            <ul class="test-dropdown-list">
+                <li>Item 1 — Hello World</li>
+                <li>Item 2 — Region Expand works!</li>
+                <li>Item 3 — Click-through test</li>
+                <li>Item 4 — Overflow test</li>
+                <li>Item 5 — Bottom item</li>
+            </ul>
+        </div>
+    }
+</div>
+
+@code {
+    private bool _isOpen;
+
+    private void ToggleDropdown()
+    {
+        _isOpen = !_isOpen;
+        if (_isOpen)
+        {
+            // Expand visible window region to show the dropdown panel
+            RegionService.ExpandRegion(300);
+        }
+        else
+        {
+            RegionService.CollapseRegion();
+        }
+    }
+
+    private void CloseDropdown()
+    {
+        _isOpen = false;
+        RegionService.CollapseRegion();
+    }
+}

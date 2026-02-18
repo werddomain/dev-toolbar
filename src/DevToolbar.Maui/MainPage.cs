@@ -9,9 +9,13 @@ public class MainPage : ContentPage
 {
     public MainPage()
     {
-        Content = new BlazorWebView
+        // Transparent page background so the desktop shows through
+        BackgroundColor = Colors.Transparent;
+
+        var blazorWebView = new BlazorWebView
         {
             HostPage = "wwwroot/index.html",
+            BackgroundColor = Colors.Transparent,
             RootComponents =
             {
                 new RootComponent
@@ -21,5 +25,17 @@ public class MainPage : ContentPage
                 }
             }
         };
+
+
+        blazorWebView.BlazorWebViewInitialized += (sender, args) =>
+        {
+            // Match WebView2 background to the toolbar glass background
+            // This ensures no flash of a different color during load
+            args.WebView.DefaultBackgroundColor =
+                global::Windows.UI.Color.FromArgb(255, 200, 207, 218);
+        };
+
+
+        Content = blazorWebView;
     }
 }

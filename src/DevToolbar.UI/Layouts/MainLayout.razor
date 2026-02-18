@@ -10,6 +10,7 @@
 @inject IScriptService ScriptService
 @inject ITimeTrackingService TimeTrackingService
 @inject ThemeService ThemeService
+@inject IGlobalSettingsService GlobalSettingsService
 
 <div class="toolbar-shell" style="@ThemeService.GetCssVariables()">
     @* ── Zone 1: Project Selector (z-index: 20) ── *@
@@ -35,6 +36,9 @@
         <ActionDeck Actions="@_actions" OnActionClicked="HandleActionClicked" />
     </div>
 
+    @* ── Zone 3b: Taskbar — Open Windows (conditional) ── *@
+    <TaskbarModule />
+
     @* ── Zone 4: System — Timer + Settings (z-index: 20) ── *@
     <div class="module-system">
         @{
@@ -48,6 +52,7 @@
         </span>
         <button class="system-btn" @onclick="ToggleTimeReport" title="Time Report">📊</button>
         <a href="/settings" class="system-btn system-settings" title="Settings">⚙️</a>
+        <TestDropdown />
     </div>
 </div>
 

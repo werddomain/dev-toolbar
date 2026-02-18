@@ -21,6 +21,10 @@ builder.Services.AddSingleton<IFileSystemService, MockFileSystemService>();
 builder.Services.AddSingleton<ISettingsService, MockSettingsService>();
 builder.Services.AddSingleton<IStorageService, MockStorageService>();
 builder.Services.AddSingleton<INativeService, MockNativeService>();
+builder.Services.AddSingleton<IWindowService, MockWindowService>();
+builder.Services.AddSingleton<IDockingService, MockDockingService>();
+builder.Services.AddSingleton<IGlobalSettingsService, MockGlobalSettingsService>();
+builder.Services.AddSingleton<IWindowRegionService, MockWindowRegionService>();
 
 // Register plugins
 builder.Services.AddSingleton<IPlugin, GitPlugin>();

@@ -8,6 +8,11 @@ using DevToolbar.Plugins.TimeTracker;
 using DevToolbar.Plugins.WorkItems;
 using DevToolbar.UI.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.LifecycleEvents;
+#if WINDOWS
+using DevToolbar.Maui.Platforms.Windows;
+using DevToolbar.Maui.Platforms.Windows.Services;
+#endif
 
 namespace DevToolbar.Maui;
 
@@ -24,6 +29,26 @@ public static class MauiProgram
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+            })
+            .ConfigureLifecycleEvents(events =>
+            {
+#if WINDOWS
+                events.AddWindows(wle =>
+                {
+                    // Track whether the first (Blazor) window has been configured
+                    bool blazorConfigured = false;
+                    wle.OnWindowCreated(nativeWindow =>
+                    {
+                        if (!blazorConfigured)
+                        {
+                            blazorConfigured = true;
+                            // Configure only the Blazor toolbar window (kept for compatibility)
+                            WindowHelper.ConfigureToolbarWindow(nativeWindow);
+                        }
+                        // The XAML toolbar window configures itself in NativeToolbarPage.xaml.cs
+                    });
+                });
+#endif
             });
 
         builder.Services.AddMauiBlazorWebView();
@@ -41,6 +66,16 @@ public static class MauiProgram
         builder.Services.AddSingleton<IFileSystemService, WindowsFileSystemService>();
         builder.Services.AddSingleton<ISettingsService, JsonSettingsService>();
         builder.Services.AddSingleton<IScriptService, WindowsScriptService>();
+
+        // Register window management & docking services
+        builder.Services.AddSingleton<IGlobalSettingsService, JsonGlobalSettingsService>();
+#if WINDOWS
+        builder.Services.AddSingleton<WindowsWindowService>();
+        builder.Services.AddSingleton<IWindowService>(sp => sp.GetRequiredService<WindowsWindowService>());
+        builder.Services.AddSingleton<WindowsAppBarService>();
+        builder.Services.AddSingleton<IDockingService>(sp => sp.GetRequiredService<WindowsAppBarService>());
+        builder.Services.AddSingleton<IWindowRegionService, WindowsRegionService>();
+#endif
 
         // Register plugins
         builder.Services.AddSingleton<IPlugin, GitPlugin>();
